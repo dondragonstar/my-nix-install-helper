@@ -35,7 +35,15 @@
     input {
       kb_layout = us
       follow_mouse = 1
-      natural_scroll = true
+      touchpad {
+        natural_scroll = true
+        scroll_factor = 1.0
+      }
+    }
+    
+    device {
+      name = elan0518:00-04f3:31fc-touchpad
+      scroll_factor = 1.0
     }
 
     general {
