@@ -35,6 +35,7 @@
     input {
       kb_layout = us
       follow_mouse = 1
+      natural_scroll = true
     }
 
     general {
