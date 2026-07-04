@@ -248,6 +248,7 @@ in
     rofi
     zed-editor
     alacritty
+    antigravity
     starship
     zoxide
     fzf

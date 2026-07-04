@@ -112,6 +112,22 @@
   };
 
   ##############################################################
+  ## Ollama (local AI models)
+  ##############################################################
+  services.ollama = {
+    enable = true;
+    package = pkgs.ollama-cuda;
+    host = "127.0.0.1";
+    port = 11434;
+  };
+
+  # Keep NVIDIA GPU awake for Ollama (PRIME offload powers it down).
+  systemd.services.ollama.serviceConfig.Environment = [
+    "__NV_PRIME_RENDER_OFFLOAD=1"
+    "__GLX_VENDOR_LIBRARY_NAME=nvidia"
+  ];
+
+  ##############################################################
   ## User
   ##############################################################
   users.users.hydragon2000 = {
@@ -137,6 +153,7 @@
     firefox
     pciutils   # generically useful for hardware debugging (lspci, etc.)
     networkmanagerapplet
+    ollama
   ];
 
   fonts.packages = with pkgs; [
