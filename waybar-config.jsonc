@@ -1,0 +1,91 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 34,
+  "spacing": 8,
+
+  "modules-left": ["hyprland/workspaces", "hyprland/window"],
+
+  "modules-center": ["clock"],
+
+  "modules-right": [
+    "network",
+    "cpu",
+    "temperature",
+    "memory",
+    "backlight",
+    "pulseaudio",
+    "battery",
+    "tray"
+  ],
+
+  "hyprland/workspaces": {
+    "format": "{name}",
+    "persistent-workspaces": {
+      "1": [],
+      "2": [],
+      "3": [],
+      "4": [],
+      "5": []
+    }
+  },
+
+  "hyprland/window": {
+    "format": "{}",
+    "max-length": 60
+  },
+
+  "clock": {
+    "format": "{:%a %d %b  %H:%M}",
+    "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+  },
+
+  "network": {
+    "format-wifi": "󰖩 {signalStrength}%",
+    "format-ethernet": "󰈀",
+    "format-disconnected": "󰖪",
+    "tooltip-format": "{essid}\n{ipaddr}",
+    "on-click": "rofi-network-manager"
+  },
+
+  "cpu": {
+    "format": "󰍛 {usage}%"
+  },
+
+  "temperature": {
+    "critical-threshold": 85,
+    "format": "󰔏 {temperatureC}°C"
+  },
+
+  "memory": {
+    "format": "󰘚 {}%"
+  },
+
+  "backlight": {
+    "device": "intel_backlight",
+    "format": "󰃠 {percent}%"
+  },
+
+  "pulseaudio": {
+    "format": "{icon} {volume}%",
+    "format-muted": "󰝟",
+    "format-icons": {
+      "default": ["󰕿", "󰖀", "󰕾"]
+    },
+    "on-click": "pavucontrol"
+  },
+
+  "battery": {
+    "states": {
+      "warning": 30,
+      "critical": 15
+    },
+    "format": "{icon} {capacity}%",
+    "format-charging": "󰂄 {capacity}%",
+    "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"]
+  },
+
+  "tray": {
+    "spacing": 10
+  }
+}
