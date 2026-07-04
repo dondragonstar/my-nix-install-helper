@@ -93,9 +93,6 @@
 | File | Source of Truth | Purpose |
 |---|---|---|
 | `~/.config/systemd/user/tray.target` | Auto | HM System Tray target |
-| `~/.config/systemd/user/nixos-config-sync.path` | Manual | Watches /etc/nixos/* for changes, triggers sync |
-| `~/.config/systemd/user/nixos-config-sync.service` | Manual | Runs sync.sh with 10s debounce |
-| `~/.config/systemd/user/nixos-config-sync.sh` | Manual | Wrapper script for systemd → sync.sh |
 | `~/.config/environment.d/10-home-manager.conf` | Auto | LOCALE_ARCHIVE env var |
 | `~/.config/dconf/user` | Auto | GNOME/GTK color-scheme = prefer-dark |
 | `~/.config/dconf/.keep` | Auto | Placeholder |
@@ -103,7 +100,7 @@
 ### opencode / AI
 | File | Source of Truth | Purpose |
 |---|---|---|
-| `~/.config/opencode/opencode.jsonc` | Runtime | **Currently almost empty** — only has `$schema` URL. **Should be enhanced** to auto-load context files |
+| `~/.config/opencode/opencode.jsonc` | Runtime | Auto-loads CONFIGS_MASTER.md as instruction; permissions allow sync.sh + git without prompting |
 | `~/.config/opencode/plugins/herdr-agent-state.js` | Runtime | herdr integration plugin — syncs agent state to herdr pane |
 | `~/CONFIGS_MASTER.md` | **THIS FILE** | Master lookup table for all configs |
 
@@ -156,7 +153,7 @@
               └── inline text blocks → various ~/.config/ files
 ```
 
-**Golden rule**: Edit `/etc/nixos/home.nix` for user-level changes, `/etc/nixos/configuration.nix` for system-level. Run `sudo nixos-rebuild switch --flake /etc/nixos#hydragon2000-pc` to apply.
+**Golden rule**: Edit `/etc/nixos/home.nix` for user-level changes, `/etc/nixos/configuration.nix` for system-level. **AI agents must NOT run nixos-rebuild** — the human handles that after reviewing changes.
 
 ---
 
@@ -189,22 +186,6 @@ They **will diverge** if not synced. The sync script does:
 /etc/nixos/  ──copy──→  /etc/nixos/repo/  ──commit──→  git push origin main
 ```
 
-### Automatic safety net (systemd path watcher)
-
-A systemd user path unit watches these files for changes:
-```
-/etc/nixos/{configuration,flake,flake.lock,home,theme}.nix
-/etc/nixos/waybar-config.jsonc
-~/CONFIGS_MASTER.md
-~/.config/opencode/opencode.jsonc
-/etc/nixos/repo/sync.sh
-```
-
-On any change, after a 10-second debounce, it runs `sync.sh`
-automatically — so even if the agent forgets, changes still get committed
-and pushed. This is a **safety net**, not a replacement for the agent
-running sync.sh directly.
-
 ### Mandatory workflow for EVERY AGENT SESSION
 
 ```
@@ -216,20 +197,5 @@ running sync.sh directly.
 
 The script handles:
 - `configuration.nix`, `flake.nix`, `flake.lock`, `home.nix`, `theme.nix`
-- `waybar-config.jsonc`, `alacritty.toml`
+- `waybar-config.jsonc`, `alacritty.toml`, `CONFIGS_MASTER.md`
 - Excludes `hardware-configuration.nix` (auto-generated)
-
-If you edited `~/CONFIGS_MASTER.md`, the sync script does NOT auto-track it
-(because it's outside `/etc/nixos/`). You must `git add` and commit it separately
-inside the repo, or edit the sync script to include it.
-
-### Why this matters
-
-```
-Last git commit: only configuration.nix, flake.nix, home.nix were tracked
-Now added:       theme.nix, waybar-config.jsonc, alacritty.toml, flake.lock
-Next config you add: will be MISSING from the repo unless you run sync.sh
-```
-
-The permission for the sync script is set to `"allow"` in opencode's config,
-so it runs **without prompting**.
