@@ -10,6 +10,7 @@
   ##############################################################
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.systemd-boot.configurationLimit = 3;
 
   # NVIDIA's proprietary driver needs the modesetting kernel param.
   boot.kernelParams = [ "nvidia-drm.modeset=1" ];
@@ -21,7 +22,7 @@
   networking.networkmanager.enable = true;
 
   # Disable wpa_supplicant explicitly -- NetworkManager owns wifi.
-  networking.wireless.enable = false;
+  # networking.wireless.enable = false;
 
   ##############################################################
   ## Time / Locale
@@ -136,6 +137,11 @@
     firefox
     pciutils   # generically useful for hardware debugging (lspci, etc.)
     networkmanagerapplet
+  ];
+
+  fonts.packages = with pkgs; [
+    nerd-fonts.jetbrains-mono
+    font-awesome
   ];
 
   programs.firefox.enable = true;

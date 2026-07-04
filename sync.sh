@@ -1,0 +1,42 @@
+#!/run/current-system/sw/bin/bash
+set -e
+
+REPO_DIR="/etc/nixos/repo"
+NIXOS_DIR="/etc/nixos"
+CONFIGS_MASTER="$HOME/CONFIGS_MASTER.md"
+
+FILES=(
+  configuration.nix
+  flake.nix
+  flake.lock
+  home.nix
+  theme.nix
+  waybar-config.jsonc
+  alacritty.toml
+)
+
+echo "=== Syncing NixOS configs to repo ==="
+
+for f in "${FILES[@]}"; do
+  if [ -f "$NIXOS_DIR/$f" ]; then
+    cp "$NIXOS_DIR/$f" "$REPO_DIR/$f"
+    echo "  copied $f"
+  fi
+done
+
+cd "$REPO_DIR"
+
+if git diff --quiet && git diff --cached --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
+  echo "  No changes to commit."
+else
+  git add -A
+  COMMIT_MSG="auto-sync: $(date '+%Y-%m-%d %H:%M:%S')"
+  git commit -m "$COMMIT_MSG"
+  echo "  Committed: $COMMIT_MSG"
+
+  echo "  Pushing to origin..."
+  git push origin main
+  echo "  Push done."
+fi
+
+echo "=== Sync complete ==="
