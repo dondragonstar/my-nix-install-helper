@@ -24,6 +24,12 @@ for f in "${FILES[@]}"; do
   fi
 done
 
+# Also sync CONFIGS_MASTER.md so changes to it are tracked in the repo
+if [ -f "$CONFIGS_MASTER" ]; then
+  cp "$CONFIGS_MASTER" "$REPO_DIR/CONFIGS_MASTER.md"
+  echo "  copied CONFIGS_MASTER.md"
+fi
+
 cd "$REPO_DIR"
 
 if git diff --quiet && git diff --cached --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
