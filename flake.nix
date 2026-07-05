@@ -2,18 +2,21 @@
   description = "hydragon2000's NixOS + Hyprland system";
 
   inputs = {
-    # 26.05 "Yarara" is the current stable release as of install time.
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
-
     home-manager = {
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }: {
-    nixosConfigurations.hydragon2000-pc = nixpkgs.lib.nixosSystem {
+  outputs = { self, nixpkgs, home-manager, ... }: let
+    # ── MACHINE-SPECIFIC: change these on a new system ──
+    hostname = "hydragon2000-pc";
+    username = "hydragon2000";
+  in {
+    nixosConfigurations.${hostname} = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
+      specialArgs = { inherit hostname username; };
       modules = [
         ./configuration.nix
         ./hardware-configuration.nix
@@ -21,7 +24,8 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.users.hydragon2000 = import ./home.nix;
+          home-manager.extraSpecialArgs = { inherit hostname username; };
+          home-manager.users.${username} = import ./home.nix;
           home-manager.backupFileExtension = "hm-backup";
         }
       ];

@@ -1,11 +1,11 @@
-{ config, pkgs, ... }:
+{ config, pkgs, username, hostname, ... }:
 
 let
   theme = import ./theme.nix;
 in
 {
-  home.username = "hydragon2000";
-  home.homeDirectory = "/home/hydragon2000";
+  home.username = username;
+  home.homeDirectory = "/home/${username}";
   home.stateVersion = "26.05";
 
   # Let Home Manager manage itself.
@@ -97,8 +97,8 @@ in
     enableCompletion = true;
     shellAliases = {
       ll = "ls -la";
-      rebuild = "sudo nixos-rebuild switch --flake /etc/nixos#hydragon2000-pc";
-      drybuild = "sudo nixos-rebuild dry-build --flake /etc/nixos#hydragon2000-pc";
+      rebuild = "sudo nixos-rebuild switch --flake /etc/nixos#${hostname}";
+      drybuild = "sudo nixos-rebuild dry-build --flake /etc/nixos#${hostname}";
       cat = "bat";
       ls = "eza";
     };
