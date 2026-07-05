@@ -134,6 +134,7 @@
     networkmanagerapplet
     ollama
     gnome-keyring
+    appimage-run
   ];
 
   fonts.packages = with pkgs; [
