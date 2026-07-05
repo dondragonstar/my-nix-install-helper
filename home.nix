@@ -79,7 +79,7 @@ in
     mimeType = [ "x-scheme-handler/claude" ];
     startupNotify = true;
     settings.StartupWMClass = "claude-desktop";
-    settings.SingleMainWindow = true;
+    settings.SingleMainWindow = "true";
     actions.NewChat = {
       name = "New chat";
       exec = "claude-desktop claude://claude.ai/new";
