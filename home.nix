@@ -67,6 +67,30 @@ in
     hyprcursor.enable = true;
   };
 
+  # ── Claude Desktop entry ──
+  xdg.desktopEntries."claude-desktop" = {
+    name = "Claude";
+    comment = "Desktop application for Claude.ai";
+    genericName = "AI Assistant";
+    categories = [ "Utility" "Development" ];
+    keywords = [ "AI" "Chat" "Assistant" "Claude" "Code" "LLM" ];
+    exec = "claude-desktop %u";
+    icon = "claude-desktop";
+    type = "Application";
+    mimeType = [ "x-scheme-handler/claude" ];
+    startupNotify = true;
+    settings.StartupWMClass = "claude-desktop";
+    settings.SingleMainWindow = true;
+    actions.NewChat = {
+      name = "New chat";
+      exec = "claude-desktop claude://claude.ai/new";
+    };
+    actions.NewCode = {
+      name = "New Claude Code session";
+      exec = "claude-desktop claude://code/new";
+    };
+  };
+
   dconf.settings = {
     "org/gnome/desktop/interface" = {
       color-scheme = "prefer-dark";
@@ -240,7 +264,11 @@ in
     windowrule = match:class ^(waypaper)$, float on, center on, size 60% 70%
   '';
 
+  # ── Claude Desktop wrapper ──
   home.packages = with pkgs; [
+    (pkgs.writeShellScriptBin "claude-desktop" ''
+      exec ${pkgs.appimage-run}/bin/appimage-run /home/${username}/Claude_Desktop-1.18286.0-x86_64.AppImage "$@"
+    '')
     ripgrep
     fd
     btop
