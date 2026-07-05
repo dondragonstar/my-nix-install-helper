@@ -199,3 +199,16 @@ The script handles:
 - `configuration.nix`, `flake.nix`, `flake.lock`, `home.nix`, `theme.nix`
 - `waybar-config.jsonc`, `alacritty.toml`, `CONFIGS_MASTER.md`
 - Excludes `hardware-configuration.nix` (auto-generated)
+
+### AI commit messages (NEW — 2026-07-05)
+
+`sync.sh` now pipes the actual git diff to `qwen2.5-coder:3b` (local Ollama) to generate
+**meaningful commit messages** describing what changed and why. No more `auto-sync: date` timestamps.
+
+The flow:
+```
+edit config → sync.sh → copies files → git diff | ollama → AI writes commit msg → push
+```
+
+- `sync.sh:41-43` — sends diff to Ollama; falls back to stat-based msg if AI fails
+- `gen-commit-msg.py` — Python helper that calls Ollama API, lives in repo dir
