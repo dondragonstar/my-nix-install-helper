@@ -37,12 +37,19 @@ if git diff --quiet && git diff --cached --quiet && [ -z "$(git ls-files --other
 else
   git add -A
 
-  # Build meaningful commit message from actual diffs
-  CHANGED_FILES=$(git diff --cached --name-only | tr '\n' ' ')
-  STAT_LINE=$(git diff --cached --stat | tail -1)
-  COMMIT_MSG="config: ${CHANGED_FILES}(${STAT_LINE})"
+  # Generate commit message using local AI (qwen2.5-coder via Ollama)
+  DIFF_CONTENT=$(git diff --cached)
+  COMMIT_MSG=$(echo "$DIFF_CONTENT" | python3 "$REPO_DIR/gen-commit-msg.py" 2>/dev/null || true)
 
-  git commit -m "$COMMIT_MSG" -m "$(git diff --cached --stat)"
+  # Fallback if AI fails
+  if [ -z "$COMMIT_MSG" ]; then
+    CHANGED=$(git diff --cached --name-only | tr '\n' ' ')
+    STAT=$(git diff --cached --stat | tail -1)
+    COMMIT_MSG="config: update ${CHANGED}(${STAT})"
+    echo "  (AI unavailable, using auto-generated message)"
+  fi
+
+  git commit -m "$COMMIT_MSG"
   echo "  Committed: $COMMIT_MSG"
 
   echo "  Pushing to origin..."
