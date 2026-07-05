@@ -133,6 +133,7 @@
     pciutils
     networkmanagerapplet
     ollama
+    gnome-keyring
   ];
 
   fonts.packages = with pkgs; [
@@ -141,6 +142,8 @@
   ];
 
   programs.firefox.enable = true;
+
+  services.gnome.gnome-keyring.enable = true;
 
   system.stateVersion = "26.05";
 }
