@@ -36,8 +36,13 @@ if git diff --quiet && git diff --cached --quiet && [ -z "$(git ls-files --other
   echo "  No changes to commit."
 else
   git add -A
-  COMMIT_MSG="auto-sync: $(date '+%Y-%m-%d %H:%M:%S')"
-  git commit -m "$COMMIT_MSG"
+
+  # Build meaningful commit message from actual diffs
+  CHANGED_FILES=$(git diff --cached --name-only | tr '\n' ' ')
+  STAT_LINE=$(git diff --cached --stat | tail -1)
+  COMMIT_MSG="config: ${CHANGED_FILES}(${STAT_LINE})"
+
+  git commit -m "$COMMIT_MSG" -m "$(git diff --cached --stat)"
   echo "  Committed: $COMMIT_MSG"
 
   echo "  Pushing to origin..."
