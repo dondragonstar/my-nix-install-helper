@@ -73,7 +73,6 @@ in
     comment = "Desktop application for Claude.ai";
     genericName = "AI Assistant";
     categories = [ "Utility" "Development" ];
-    keywords = [ "AI" "Chat" "Assistant" "Claude" "Code" "LLM" ];
     exec = "claude-desktop %u";
     icon = "claude-desktop";
     type = "Application";
