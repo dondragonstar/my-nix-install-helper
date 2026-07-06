@@ -67,6 +67,9 @@ in
     hyprcursor.enable = true;
   };
 
+  # ── XDG / Desktop entries ──
+  xdg.enable = true;
+
   # ── Claude Desktop entry ──
   xdg.desktopEntries."claude-desktop" = {
     name = "Claude";
@@ -260,6 +263,7 @@ in
 
     windowrule = match:class ^(org.pulseaudio.pavucontrol)$, float on, center on, size 900 600
     windowrule = match:class ^(rofi)$, float on, center on
+    windowrule = match:class ^(claude-desktop)$, float on, center on, size 60% 80%
     windowrule = match:class ^(waypaper)$, float on, center on, size 60% 70%
   '';
 
