@@ -13,6 +13,8 @@ FILES=(
   theme.nix
   waybar-config.jsonc
   alacritty.toml
+  walker-style.css
+  walker-layout.xml
 )
 
 echo "=== Syncing NixOS configs to repo ==="
