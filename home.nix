@@ -295,8 +295,6 @@ in
     windowrule = match:class ^(claude-desktop)$, float on, center on, size 60% 80%
     windowrule = match:class ^(waypaper)$, float on, center on, size 60% 70%
     windowrule = match:title ^(Network Manager)$, float on, center on, size 900 550
-    windowrule = dimaround, match:title ^(Network Manager)$
-    windowrule = opacity 0.95 0.90, match:title ^(Network Manager)$
   '';
 
   # ── Claude Desktop wrapper ──
