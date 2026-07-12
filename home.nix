@@ -302,7 +302,7 @@ in
     windowrule = match:class ^(rofi)$, float on, center on
     windowrule = match:class ^(claude-desktop)$, float on, center on, size 60% 80%
     windowrule = match:class ^(waypaper)$, float on, center on, size 60% 70%
-    windowrule = match:initialTitle ^(wlctl)$, float on, center on, size 900 550
+    windowrule = match:title ^(wlctl)$, float on, center on, size 900 550
   '';
 
   home.activation.removeStaleHyprlandLua = config.lib.dag.entryAfter ["writeBoundary"] ''
