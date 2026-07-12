@@ -305,8 +305,7 @@ in
     bind = SUPER, F, fullscreen,
     bind = SUPER, Space, exec, walker
     bind = SUPER SHIFT, Space, exec, waypaper --backend swww
-    bind = SUPER SHIFT, T, exec, alacritty -e btop
-    bind = SUPER SHIFT, D, exec, alacritty --title gdu -e gdu ~
+    bind = SUPER SHIFT, D, exec, qdirstat
     bind = , Print, exec, screenshot region
     bind = SHIFT, Print, exec, screenshot screen
 
@@ -336,7 +335,6 @@ in
     windowrule = match:class ^(claude-desktop)$, float on, center on, size 60% 80%
     windowrule = match:class ^(waypaper)$, float on, center on, size 60% 70%
     windowrule = match:title ^(wlctl)$, float on, center on, size 900 550
-    windowrule = match:title ^(gdu)$, float on, center on, size 60% 70%
   '';
 
   home.activation.removeStaleHyprlandLua = config.lib.dag.entryAfter ["writeBoundary"] ''
@@ -351,8 +349,7 @@ in
     ripgrep
     fd
     btop
-    duf
-    gdu
+    qdirstat
     zed-editor
     alacritty
     antigravity
