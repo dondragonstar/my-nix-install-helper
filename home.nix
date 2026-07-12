@@ -8,6 +8,24 @@ in
   home.homeDirectory = "/home/${username}";
   home.stateVersion = "26.05";
 
+  # ── Environment variables ──
+  home.sessionVariables = {
+    NEWT_COLORS = ''
+      root=default,default
+      window=,default
+      border=cyan,default
+      textbox=default,default
+      button=black,#89b4fa
+      actbutton=black,#a6e3a1
+      checkbox=default,default
+      actcheckbox=black,#a6e3a1
+      entry=default,default
+      label=cyan,default
+      listbox=white,default
+      actlistbox=white,#89b4fa
+    '';
+  };
+
   # Let Home Manager manage itself.
   programs.home-manager.enable = true;
 
@@ -186,6 +204,9 @@ in
     }
   '';
 
+  # ── Alacritty ──
+  home.file.".config/alacritty/alacritty.toml".source = ./alacritty.toml;
+
   # Minimal placeholder Hyprland config so the compositor starts with
   # *something* on first login instead of a blank/black screen.
   # You will replace this with your own dotfiles once booted.
@@ -266,6 +287,7 @@ in
     windowrule = match:class ^(claude-desktop)$, float on, center on, size 60% 80%
     windowrule = match:class ^(waypaper)$, float on, center on, size 60% 70%
     windowrule = match:title ^(Network Manager)$, float on, center on, size 800 600
+    windowrule = opacity 0.95, match:title ^(Network Manager)$
   '';
 
   # ── Claude Desktop wrapper ──
