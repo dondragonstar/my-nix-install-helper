@@ -152,6 +152,12 @@ in
     };
   };
 
+  # Walker + Elephant must start with default.target, not graphical-session.target
+  systemd.user.services = {
+    walker.Install.WantedBy = [ "default.target" ];
+    elephant.Install.WantedBy = [ "default.target" ];
+  };
+
   # ── SSH config: pick the right key per account ──
   programs.ssh = {
     enable = true;
