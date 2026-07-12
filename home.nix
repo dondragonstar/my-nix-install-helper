@@ -9,22 +9,7 @@ in
   home.stateVersion = "26.05";
 
   # ── Environment variables ──
-  home.sessionVariables = {
-    NEWT_COLORS = ''
-      root=default,default
-      window=,default
-      border=cyan,default
-      textbox=default,default
-      button=black,#89b4fa
-      actbutton=black,#a6e3a1
-      checkbox=default,default
-      actcheckbox=black,#a6e3a1
-      entry=default,default
-      label=cyan,default
-      listbox=white,default
-      actlistbox=white,#89b4fa
-    '';
-  };
+  home.sessionVariables = { };
 
   # Let Home Manager manage itself.
   programs.home-manager.enable = true;
@@ -120,14 +105,13 @@ in
   # ── SSH config: pick the right key per account ──
   programs.ssh = {
     enable = true;
-    matchBlocks = {
-      # Personal account (default)
+    enableDefaultConfig = false;
+    settings = {
       "github.com" = {
         hostname = "github.com";
         user = "git";
         identityFile = "~/.ssh/id_ed25519_personal";
       };
-      # Professional account — use a different host alias
       "github-professional" = {
         hostname = "github.com";
         user = "git";
@@ -317,7 +301,6 @@ in
     ripgrep
     fd
     btop
-    neovim
     rofi
     zed-editor
     alacritty
@@ -329,11 +312,9 @@ in
     eza
     brightnessctl
     playerctl
-    nautilus
     thunar
     gvfs
     pavucontrol
-    networkmanagerapplet
     wlctl.packages.${pkgs.stdenv.hostPlatform.system}.default
     awww
     waypaper

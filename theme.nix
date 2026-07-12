@@ -22,24 +22,6 @@ rec {
       };
     };
 
-    # Bibata Modern Classic theme
-    bibata-classic = {
-      waybar = {
-        background = "rgba(20, 20, 20, 0.85)";
-        text = "#e5e5e5";
-        item-background = "rgba(40, 40, 40, 0.85)";
-        item-text = "#aaaaaa";
-        active-item-background = "rgba(90, 90, 90, 0.8)";
-        active-item-text = "white";
-        warning = "#ffb86c";
-        critical = "#ff5555";
-      };
-      cursor = {
-        name = "Bibata-Modern-Classic";
-        size = 24;
-      };
-    };
-
     # Google Dot theme
     google-dot = {
       waybar = {

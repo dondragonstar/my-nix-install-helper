@@ -126,12 +126,9 @@
     vim
     wget
     curl
-    kitty
-    foot
     waybar
     firefox
     pciutils
-    networkmanagerapplet
     ollama
     gnome-keyring
     appimage-run
