@@ -3,7 +3,7 @@
 > **Source of truth**: `/etc/nixos/` (Nix flake + Home Manager)
 > All user-level configs under `~/.config/` are *generated* or *templated* from
 > `home.nix` by Home Manager. **Edit the flake, not the runtime files.**
-> Runtime files (`~/.config/waybar/config.jsonc`, `~/.config/hypr/hyprland.conf`, etc.)
+> Runtime files (`~/.config/waybar/config.jsonc`, `~/.config/hypr/hyprland.lua`, etc.)
 > get overwritten on `nixos-rebuild switch` — so edit `/etc/nixos/home.nix` instead.
 
 ---
@@ -29,7 +29,7 @@
 ### Window Manager / Compositor
 | File | Source of Truth | Purpose |
 |---|---|---|
-| `~/.config/hypr/hyprland.conf` | `/etc/nixos/home.nix` (inline text) | Hyprland keybinds, monitors, rules. **Edit home.nix, not this file** — it gets overwritten |
+| `~/.config/hypr/hyprland.lua` | `/etc/nixos/home.nix` (inline text) | Hyprland keybinds, monitors, rules (Lua, 0.55+ native). **Edit home.nix, not this file** — it gets overwritten |
 | `~/.config/waybar/config.jsonc` | `/etc/nixos/waybar-config.jsonc` | Waybar modules/layout |
 | `~/.config/waybar/style.css` | `/etc/nixos/home.nix` (inline text w/ theme vars) | Waybar colors (uses `${theme.current.*}` variables) |
 | `~/.config/waybar/config.jsonc.hm-backup` | *backup* | **Redundant** — HM backup from before first overwrite. Can delete |
@@ -38,7 +38,7 @@
 ### Terminal Emulators
 | File | Source of Truth | Purpose |
 |---|---|---|
-| `~/.config/alacritty/alacritty.toml` | Runtime (not HM-managed) | Window padding (x=8, y=8). Minimal |
+| `~/.config/alacritty/alacritty.toml` | `/etc/nixos/alacritty.toml` (via `/etc/nixos/home.nix`) | Catppuccin Mocha palette, JetBrainsMono Nerd Font, opacity 0.9 |
 | `~/.config/kitty/` (empty) | N/A | **Unused** — kitty is installed but never configured. Empty dir |
 | `~/.config/btop/btop.conf` | Runtime | System monitor config. Full default with minor tweaks |
 | `~/.config/btop/themes/` (empty) | N/A | **Unused** — no custom themes placed here |
@@ -86,6 +86,7 @@
 | `~/.config/discord/settings.json` | Runtime | Discord window bounds, SKIP_HOST_UPDATE |
 | `~/.config/pavucontrol.ini` | Runtime | Audio mixer window state |
 | `~/.config/mimeapps.list` | Runtime | Default apps: Telegram for tg://, Firefox/Zed for HTML |
+| `~/.config/impala/config.toml` | `/etc/nixos/home.nix` (inline text) | wlctl (NetworkManager TUI) keybindings: s=scan, Space=connect, etc. |
 | `~/.config/herdr/config.toml` | Runtime | herdr AI terminal: agent panel sort = spaces, theme = terminal |
 | `~/.config/waypaper/config.ini` | Runtime | Wallpaper manager (backend=swww, wp dir, transition settings) |
 | `~/.config/waypaper/config.ini.hm-backup` | *backup* | **Redundant** — old waypaper config. Can delete |
@@ -113,15 +114,13 @@
 
 2. **`~/.zshenv`**: Has `if [[ -z "${__HM_ZSH_SESS_VARS_SOURCED-}" ]]; then export __HM_ZSH_SESS_VARS_SOURCED=1; fi` with literally nothing inside the if block. The guard exists but guards nothing.
 
-3. **`/etc/nixos/home.nix` comment on Hyprland**: Says "Minimal placeholder Hyprland config so the compositor starts with *something* on first login instead of a blank/black screen. You will replace this with your own dotfiles once booted." — but this IS the production config now. The comment is misleading.
+3. **`~/.config/fontconfig/conf.d/52-hm-default-fonts.conf`**: Valid XML with an empty `<fontconfig>` block. Does nothing.
 
-4. **`~/.config/fontconfig/conf.d/52-hm-default-fonts.conf`**: Valid XML with an empty `<fontconfig>` block. Does nothing.
+4. **`~/.config/vlc/vlcrc`**: 4666 lines of all-commented-out defaults. VLC creates this on first launch and never prunes it.
 
-5. **`~/.config/vlc/vlcrc`**: 4666 lines of all-commented-out defaults. VLC creates this on first launch and never prunes it.
+5. **Waybar config duplication**: The source config is in `/etc/nixos/waybar-config.jsonc`, but it gets copied to `~/.config/waybar/config.jsonc`. The runtime file has slightly different formatting (no trailing commas) — meaning someone edited the runtime file after deployment. On next `nixos-rebuild`, those changes vanish.
 
-6. **Waybar config duplication**: The source config is in `/etc/nixos/waybar-config.jsonc`, but it gets copied to `~/.config/waybar/config.jsonc`. The runtime file has slightly different formatting (no trailing commas) — meaning someone edited the runtime file after deployment. On next `nixos-rebuild`, those changes vanish.
-
-7. **`/etc/nixos/repo/` vs `/etc/nixos/`**: NixOS configs exist in TWO places — `/etc/nixos/` (active) and `/etc/nixos/repo/` (git repo copy). This invites drift.
+6. **`/etc/nixos/repo/` vs `/etc/nixos/`**: NixOS configs exist in TWO places — `/etc/nixos/` (active) and `/etc/nixos/repo/` (git repo copy). This invites drift.
 
 ---
 

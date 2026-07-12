@@ -1,4 +1,4 @@
-{ config, pkgs, username, hostname, gazelle, ... }:
+{ config, pkgs, username, hostname, wlctl, ... }:
 
 let
   theme = import ./theme.nix;
@@ -207,94 +207,135 @@ in
   # ── Alacritty ──
   home.file.".config/alacritty/alacritty.toml".source = ./alacritty.toml;
 
-  # ── Gazelle (NetworkManager TUI) ──
-  home.file.".config/gazelle/config.json".text = ''
-    {
-      "theme": "catppuccin-mocha"
-    }
+  # ── wlctl (NetworkManager TUI) config ──
+  home.file.".config/impala/config.toml".text = ''
+    [keybindings]
+    quit = "escape"
+    toggle_power = "o"
+    scan = "s"
+    connect = "space"
+    disconnect = "d"
+    toggle_connect = "space"
+    up = "up"
+    down = "down"
+    toggle_enable = "o"
+    start = "n"
+    stop = "x"
+    restart = "r"
+    toggle_autoconnect = "a"
+    back = "backspace"
   '';
 
-  # Minimal placeholder Hyprland config so the compositor starts with
-  # *something* on first login instead of a blank/black screen.
-  # You will replace this with your own dotfiles once booted.
-  home.file.".config/hypr/hyprland.conf".text = ''
-    monitor=,preferred,auto,1
+  # Hyprland Lua config (0.55+ native format)
+  home.file.".config/hypr/hyprland.lua".text = ''
+    -- Monitor
+    hl.monitor("", "preferred", "auto", "1")
 
-    exec-once = waybar
+    -- Startup
+    hl.exec_once("waybar")
+    hl.exec_once("awww-daemon")
+    hl.exec_once("sleep 1 && awww img ~/Pictures/Wallpapers/wallpaper1.jpg")
+    hl.exec_once("hyprctl setcursor Bibata-Modern-Classic 24")
 
-    exec-once = awww-daemon
-    exec-once = sleep 1 && awww img ~/Pictures/Wallpapers/wallpaper1.jpg
+    -- Environment
+    hl.env("XCURSOR_THEME", "Bibata-Modern-Classic")
+    hl.env("XCURSOR_SIZE", "24")
+    hl.env("HYPRCURSOR_SIZE", "24")
 
-    # Cursor theme
-    env = XCURSOR_THEME,Bibata-Modern-Classic
-    env = XCURSOR_SIZE,24
-    env = HYPRCURSOR_SIZE,24
-    exec-once = hyprctl setcursor Bibata-Modern-Classic 24
+    -- Input
+    hl.input {
+        kb_layout = "us",
+        follow_mouse = 1,
+        touchpad = {
+            natural_scroll = true,
+            scroll_factor = 1.0
+        }
+    }
 
-    input {
-      kb_layout = us
-      follow_mouse = 1
-      touchpad {
-        natural_scroll = true
+    -- Device
+    hl.device {
+        name = "elan0518:00-04f3:31fc-touchpad",
         scroll_factor = 1.0
-      }
     }
 
-    device {
-      name = elan0518:00-04f3:31fc-touchpad
-      scroll_factor = 1.0
+    -- General appearance
+    hl.general {
+        gaps_in = 4,
+        gaps_out = 8,
+        border_size = 2
     }
 
-    general {
-      gaps_in = 4
-      gaps_out = 8
-      border_size = 2
+    -- Decoration
+    hl.decoration {
+        rounding = 6
     }
 
-    decoration {
-      rounding = 6
+    -- Keybinds
+    hl.bind("SUPER", "Return", "exec", "alacritty")
+    hl.bind("SUPER", "W", "killactive")
+    hl.bind("SUPER SHIFT", "W", "exec", "alacritty --title wlctl -e wlctl")
+    hl.bind("SUPER", "M", "exit")
+    hl.bind("SUPER", "E", "exec", "zeditor")
+    hl.bind("SUPER SHIFT", "F", "exec", "thunar")
+    hl.bind("SUPER", "V", "togglefloating")
+    hl.bind("SUPER", "F", "fullscreen")
+    hl.bind("SUPER", "Space", "exec", "rofi -show drun")
+    hl.bind("SUPER SHIFT", "Space", "exec", "waypaper --backend swww")
+    hl.bind("", "Print", "exec", "screenshot region")
+    hl.bind("SHIFT", "Print", "exec", "screenshot screen")
+
+    hl.bind("SUPER", "1", "workspace", "1")
+    hl.bind("SUPER", "2", "workspace", "2")
+    hl.bind("SUPER", "3", "workspace", "3")
+    hl.bind("SUPER", "4", "workspace", "4")
+    hl.bind("SUPER", "5", "workspace", "5")
+
+    hl.bind("SUPER SHIFT", "1", "movetoworkspace", "1")
+    hl.bind("SUPER SHIFT", "2", "movetoworkspace", "2")
+    hl.bind("SUPER SHIFT", "3", "movetoworkspace", "3")
+    hl.bind("SUPER SHIFT", "4", "movetoworkspace", "4")
+    hl.bind("SUPER SHIFT", "5", "movetoworkspace", "5")
+
+    hl.bindel("", "XF86MonBrightnessUp", "exec", "brightnessctl set +5%")
+    hl.bindel("", "XF86MonBrightnessDown", "exec", "brightnessctl set 5%-")
+
+    hl.bindel("", "XF86AudioRaiseVolume", "exec", "wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+")
+    hl.bindel("", "XF86AudioLowerVolume", "exec", "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-")
+    hl.bindl("", "XF86AudioMute", "exec", "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")
+
+    hl.bindm("SUPER", "mouse:272", "movewindow")
+    hl.bindm("SUPER", "mouse:273", "resizewindow")
+
+    -- Window rules
+    hl.window_rule {
+        match = { class = "org.pulseaudio.pavucontrol" },
+        float = true,
+        center = true,
+        size = "900 600"
     }
-
-    bind = SUPER, Return, exec, alacritty
-    bind = SUPER, W, killactive,
-    bind = SUPER SHIFT, W, exec, alacritty --title 'Network Manager' -e gazelle
-    bind = SUPER, M, exit,
-    bind = SUPER, E, exec, zeditor
-    bind = SUPER SHIFT, F, exec, thunar
-    bind = SUPER, V, togglefloating,
-    bind = SUPER, F, fullscreen,
-    bind = SUPER, Space, exec, rofi -show drun
-    bind = SUPER SHIFT, Space, exec, waypaper --backend swww
-    bind = , Print, exec, screenshot region
-    bind = SHIFT, Print, exec, screenshot screen
-
-    bind = SUPER, 1, workspace, 1
-    bind = SUPER, 2, workspace, 2
-    bind = SUPER, 3, workspace, 3
-    bind = SUPER, 4, workspace, 4
-    bind = SUPER, 5, workspace, 5
-
-    bind = SUPER SHIFT, 1, movetoworkspace, 1
-    bind = SUPER SHIFT, 2, movetoworkspace, 2
-    bind = SUPER SHIFT, 3, movetoworkspace, 3
-    bind = SUPER SHIFT, 4, movetoworkspace, 4
-    bind = SUPER SHIFT, 5, movetoworkspace, 5
-
-    bindel = , XF86MonBrightnessUp, exec, brightnessctl set +5%
-    bindel = , XF86MonBrightnessDown, exec, brightnessctl set 5%-
-
-    bindel = , XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+
-    bindel = , XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
-    bindl = , XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
-
-    bindm = SUPER, mouse:272, movewindow
-    bindm = SUPER, mouse:273, resizewindow
-
-    windowrule = match:class ^(org.pulseaudio.pavucontrol)$, float on, center on, size 900 600
-    windowrule = match:class ^(rofi)$, float on, center on
-    windowrule = match:class ^(claude-desktop)$, float on, center on, size 60% 80%
-    windowrule = match:class ^(waypaper)$, float on, center on, size 60% 70%
-    windowrule = match:title ^(Network Manager)$, float on, center on, size 900 550
+    hl.window_rule {
+        match = { class = "rofi" },
+        float = true,
+        center = true
+    }
+    hl.window_rule {
+        match = { class = "claude-desktop" },
+        float = true,
+        center = true,
+        size = "60% 80%"
+    }
+    hl.window_rule {
+        match = { class = "waypaper" },
+        float = true,
+        center = true,
+        size = "60% 70%"
+    }
+    hl.window_rule {
+        match = { initial_title = "wlctl" },
+        float = true,
+        center = true,
+        size = "900 550"
+    }
   '';
 
   # ── Claude Desktop wrapper ──
@@ -322,8 +363,7 @@ in
     gvfs
     pavucontrol
     networkmanagerapplet
-    # networkmanager_dmenu
-    gazelle.packages.${pkgs.system}.default
+    wlctl.packages.${pkgs.system}.default
     awww
     waypaper
     (pkgs.writeShellScriptBin "swww" "exec ${pkgs.awww}/bin/awww \"$@\"")
