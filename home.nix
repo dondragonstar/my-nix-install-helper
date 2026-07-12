@@ -1,9 +1,13 @@
-{ config, pkgs, username, hostname, wlctl, ... }:
+{ config, pkgs, username, hostname, wlctl, walker, ... }:
 
 let
   theme = import ./theme.nix;
 in
 {
+  imports = [
+    walker.homeManagerModules.default
+  ];
+
   home.username = username;
   home.homeDirectory = "/home/${username}";
   home.stateVersion = "26.05";
@@ -99,6 +103,50 @@ in
   dconf.settings = {
     "org/gnome/desktop/interface" = {
       color-scheme = "prefer-dark";
+    };
+  };
+
+  # ── Walker (app launcher) ──
+  programs.walker = {
+    enable = true;
+    runAsService = true;
+
+    config = {
+      force_keyboard_focus = true;
+      selection_wrap = true;
+      theme = "omarchy-default";
+      hide_action_hints = true;
+
+      placeholders."default" = {
+        input = " Search...";
+        list = "No Results";
+      };
+
+      keybinds.quick_activate = [];
+
+      columns.symbols = 1;
+
+      providers = {
+        max_results = 256;
+        default = [ "desktopapplications" "websearch" ];
+        prefixes = [
+          { prefix = "/"; provider = "providerlist"; }
+          { prefix = "."; provider = "files"; }
+          { prefix = ":"; provider = "symbols"; }
+          { prefix = "="; provider = "calc"; }
+          { prefix = "@"; provider = "websearch"; }
+          { prefix = "$"; provider = "clipboard"; }
+        ];
+      };
+
+      emergencies = [
+        { text = "Restart Walker"; command = "pkill walker || true; walker --gapplication-service &"; }
+      ];
+    };
+
+    themes."omarchy-default" = {
+      style = builtins.readFile ./walker-style.css;
+      layouts.layout = builtins.readFile ./walker-layout.xml;
     };
   };
 
@@ -255,7 +303,7 @@ in
     bind = SUPER SHIFT, F, exec, thunar
     bind = SUPER, V, togglefloating,
     bind = SUPER, F, fullscreen,
-    bind = SUPER, Space, exec, rofi -show drun
+    bind = SUPER, Space, exec, walker
     bind = SUPER SHIFT, Space, exec, waypaper --backend swww
     bind = , Print, exec, screenshot region
     bind = SHIFT, Print, exec, screenshot screen
@@ -283,7 +331,6 @@ in
     bindm = SUPER, mouse:273, resizewindow
 
     windowrule = match:class ^(org.pulseaudio.pavucontrol)$, float on, center on, size 900 600
-    windowrule = match:class ^(rofi)$, float on, center on
     windowrule = match:class ^(claude-desktop)$, float on, center on, size 60% 80%
     windowrule = match:class ^(waypaper)$, float on, center on, size 60% 70%
     windowrule = match:title ^(wlctl)$, float on, center on, size 900 550
@@ -301,7 +348,6 @@ in
     ripgrep
     fd
     btop
-    rofi
     zed-editor
     alacritty
     antigravity
