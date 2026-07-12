@@ -265,7 +265,7 @@ in
 
     bind = SUPER, Return, exec, alacritty
     bind = SUPER, W, killactive,
-    bind = SUPER SHIFT, W, exec, alacritty --title wlctl -e wlctl
+    bind = SUPER SHIFT, W, exec, wlctl-launcher
     bind = SUPER, M, exit,
     bind = SUPER, E, exec, zeditor
     bind = SUPER SHIFT, F, exec, thunar
@@ -334,7 +334,7 @@ in
     gvfs
     pavucontrol
     networkmanagerapplet
-    wlctl.packages.${pkgs.system}.default
+    wlctl.packages.${pkgs.stdenv.hostPlatform.system}.default
     awww
     waypaper
     (pkgs.writeShellScriptBin "swww" "exec ${pkgs.awww}/bin/awww \"$@\"")
@@ -349,6 +349,9 @@ in
         region) grim -g "$(slurp)" "$dir/''${app}_''${ts}.png" ;;
         screen) grim "$dir/''${app}_''${ts}.png" ;;
       esac
+    '')
+    (pkgs.writeShellScriptBin "wlctl-launcher" ''
+      exec alacritty --title wlctl -e wlctl "$@"
     '')
     grim
     slurp
