@@ -13,7 +13,9 @@ in
   home.stateVersion = "26.05";
 
   # ── Environment variables ──
-  home.sessionVariables = { };
+  home.sessionVariables = {
+    QT_QPA_PLATFORMTHEME = "gtk3";
+  };
 
   # Let Home Manager manage itself.
   programs.home-manager.enable = true;
