@@ -342,21 +342,15 @@ in
           center = true,
           size   = "60% 70%",
       })
+      -- wlctl window rule
+      hl.window_rule({
+          name   = "wlctl",
+          match  = { title = "wlctl" },
+          float  = true,
+          center = true,
+          size   = "900 550",
+      })
     '';
-    extraLuaFiles = {
-      "wlctl-rule" = {
-        content = ''
-          hl.window_rule({
-              name   = "wlctl",
-              match  = { title = "wlctl" },
-              float  = true,
-              center = true,
-              size   = "900 550",
-          })
-        '';
-        autoLoad = true;
-      };
-    };
   };
 
   # ── Claude Desktop wrapper ──
