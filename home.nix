@@ -186,6 +186,105 @@ in
     }
   '';
 
+  # ── networkmanager_dmenu config ──
+  home.file.".config/networkmanager-dmenu/config.ini".text = ''
+    [dmenu]
+    dmenu_command = rofi -dmenu -i -theme networkmanager-dmenu
+    highlight = True
+    compact = False
+    pinentry =
+    wifi_chars = ▂▄▆█
+    format = {name}  {sec}  {bars}
+    list_saved = True
+    prompt = Networks
+
+    [dmenu_passphrase]
+    obscure = False
+    obscure_color = #222222
+
+    [editor]
+    terminal = xterm
+    gui_if_available = True
+    gui = nm-connection-editor
+
+    [nmdm]
+    rescan_delay = 3
+    show_notifications = True
+  '';
+
+  # ── Rofi theme for networkmanager_dmenu ──
+  home.file.".config/rofi/networkmanager-dmenu.rasi".text = ''
+    * {
+        font: "JetBrainsMono Nerd Font 11";
+        background:     #1e1e2e;
+        background-alt: #181825;
+        foreground:     #cdd6f4;
+        selected:       #45475a;
+        active:         #a6e3a1;
+        urgent:         #f38ba8;
+    }
+
+    window {
+        width: 500px;
+        border-radius: 12px;
+        background-color: @background;
+        border: 2px;
+        border-color: #45475a;
+        padding: 8px;
+    }
+
+    mainbox {
+        padding: 0;
+    }
+
+    inputbar {
+        padding: 8px 12px;
+        border-radius: 8px;
+        background-color: @background-alt;
+        spacing: 8px;
+        children: [prompt, entry];
+    }
+
+    prompt {
+        text-color: @foreground;
+        font: "JetBrainsMono Nerd Font 11";
+        padding: 4px 0;
+    }
+
+    entry {
+        text-color: @foreground;
+        placeholder-color: #585b70;
+        font: "JetBrainsMono Nerd Font 11";
+        padding: 4px 0;
+    }
+
+    listview {
+        padding: 8px 0 0 0;
+        lines: 10;
+        columns: 1;
+        spacing: 4px;
+    }
+
+    element {
+        padding: 8px 12px;
+        border-radius: 8px;
+        text-color: @foreground;
+    }
+
+    element selected {
+        background-color: @selected;
+        text-color: @foreground;
+    }
+
+    element normal active {
+        text-color: @active;
+    }
+
+    element urgent normal {
+        text-color: @urgent;
+    }
+  '';
+
   # Minimal placeholder Hyprland config so the compositor starts with
   # *something* on first login instead of a blank/black screen.
   # You will replace this with your own dotfiles once booted.
@@ -292,7 +391,7 @@ in
     gvfs
     pavucontrol
     networkmanagerapplet
-    rofi-network-manager
+    networkmanager_dmenu
     awww
     waypaper
     (pkgs.writeShellScriptBin "swww" "exec ${pkgs.awww}/bin/awww \"$@\"")

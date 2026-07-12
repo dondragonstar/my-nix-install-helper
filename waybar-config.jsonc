@@ -45,7 +45,7 @@
     "format-ethernet": "󰈀",
     "format-disconnected": "󰖪",
     "tooltip-format": "{essid}\n{ipaddr}",
-    "on-click": "rofi-network-manager"
+    "on-click": "networkmanager_dmenu"
   },
 
   "cpu": {
