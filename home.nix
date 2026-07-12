@@ -226,132 +226,88 @@ in
     back = "backspace"
   '';
 
-  # ── Hyprland Lua config (HM-native, 26.05+ style) ──
-  wayland.windowManager.hyprland = {
-    enable = true;
-    configType = "lua";
-    extraConfig = ''
-      -- Monitor
-      hl.monitor({
-          output   = "",
-          mode     = "preferred",
-          position = "auto",
-          scale    = "auto",
-      })
+  # ── Hyprland config (hyprlang — nixpkgs Hyprland is built without Lua) ──
+  home.file.".config/hypr/hyprland.conf".text = ''
+    monitor=,preferred,auto,1
 
-      -- Startup
-      hl.on("hyprland.start", function()
-          hl.exec_cmd("waybar")
-          hl.exec_cmd("awww-daemon")
-          hl.exec_cmd("sleep 1 && awww img ~/Pictures/Wallpapers/wallpaper1.jpg")
-      end)
+    exec-once = waybar
+    exec-once = awww-daemon
+    exec-once = sleep 1 && awww img ~/Pictures/Wallpapers/wallpaper1.jpg
+    exec-once = hyprctl setcursor Bibata-Modern-Classic 24
 
-      -- Environment
-      hl.env("XCURSOR_THEME", "Bibata-Modern-Classic")
-      hl.env("XCURSOR_SIZE", "24")
-      hl.env("HYPRCURSOR_SIZE", "24")
+    env = XCURSOR_THEME,Bibata-Modern-Classic
+    env = XCURSOR_SIZE,24
+    env = HYPRCURSOR_SIZE,24
 
-      -- Input, general, decoration
-      hl.config({
-          input = {
-              kb_layout    = "us",
-              follow_mouse = 1,
-              touchpad = {
-                  natural_scroll = true,
-                  scroll_factor  = 1.0,
-              },
-          },
-          general = {
-              gaps_in    = 4,
-              gaps_out   = 8,
-              border_size = 2,
-          },
-          decoration = {
-              rounding = 6,
-          },
-      })
+    input {
+      kb_layout = us
+      follow_mouse = 1
+      touchpad {
+        natural_scroll = true
+        scroll_factor = 1.0
+      }
+    }
 
-      -- Device-specific
-      hl.device({
-          name          = "elan0518:00-04f3:31fc-touchpad",
-          scroll_factor = 1.0,
-      })
+    device {
+      name = elan0518:00-04f3:31fc-touchpad
+      scroll_factor = 1.0
+    }
 
-      -- Keybinds
-      hl.bind("SUPER + Return",         hl.dsp.exec_cmd("alacritty"))
-      hl.bind("SUPER + W",              hl.dsp.window.close())
-      hl.bind("SUPER SHIFT + W",        hl.dsp.exec_cmd("alacritty --title wlctl -e wlctl"))
-      hl.bind("SUPER + M",              hl.dsp.exec_cmd("hyprctl dispatch exit"))
-      hl.bind("SUPER + E",              hl.dsp.exec_cmd("zeditor"))
-      hl.bind("SUPER SHIFT + F",        hl.dsp.exec_cmd("thunar"))
-      hl.bind("SUPER + V",              hl.dsp.window.float({ action = "toggle" }))
-      hl.bind("SUPER + F",              hl.dsp.exec_cmd("hyprctl dispatch fullscreen"))
-      hl.bind("SUPER + Space",          hl.dsp.exec_cmd("rofi -show drun"))
-      hl.bind("SUPER SHIFT + Space",    hl.dsp.exec_cmd("waypaper --backend swww"))
-      hl.bind("Print",                  hl.dsp.exec_cmd("screenshot region"))
-      hl.bind("SHIFT + Print",          hl.dsp.exec_cmd("screenshot screen"))
+    general {
+      gaps_in = 4
+      gaps_out = 8
+      border_size = 2
+    }
 
-      hl.bind("SUPER + 1",              hl.dsp.focus({ workspace = 1 }))
-      hl.bind("SUPER + 2",              hl.dsp.focus({ workspace = 2 }))
-      hl.bind("SUPER + 3",              hl.dsp.focus({ workspace = 3 }))
-      hl.bind("SUPER + 4",              hl.dsp.focus({ workspace = 4 }))
-      hl.bind("SUPER + 5",              hl.dsp.focus({ workspace = 5 }))
+    decoration {
+      rounding = 6
+    }
 
-      hl.bind("SUPER SHIFT + 1",        hl.dsp.window.move({ workspace = 1 }))
-      hl.bind("SUPER SHIFT + 2",        hl.dsp.window.move({ workspace = 2 }))
-      hl.bind("SUPER SHIFT + 3",        hl.dsp.window.move({ workspace = 3 }))
-      hl.bind("SUPER SHIFT + 4",        hl.dsp.window.move({ workspace = 4 }))
-      hl.bind("SUPER SHIFT + 5",        hl.dsp.window.move({ workspace = 5 }))
+    bind = SUPER, Return, exec, alacritty
+    bind = SUPER, W, killactive,
+    bind = SUPER SHIFT, W, exec, alacritty --title wlctl -e wlctl
+    bind = SUPER, M, exit,
+    bind = SUPER, E, exec, zeditor
+    bind = SUPER SHIFT, F, exec, thunar
+    bind = SUPER, V, togglefloating,
+    bind = SUPER, F, fullscreen,
+    bind = SUPER, Space, exec, rofi -show drun
+    bind = SUPER SHIFT, Space, exec, waypaper --backend swww
+    bind = , Print, exec, screenshot region
+    bind = SHIFT, Print, exec, screenshot screen
 
-      -- Hardware keys
-      hl.bind("XF86MonBrightnessUp",    hl.dsp.exec_cmd("brightnessctl set +5%"),   { locked = true, repeating = true })
-      hl.bind("XF86MonBrightnessDown",  hl.dsp.exec_cmd("brightnessctl set 5%-"),   { locked = true, repeating = true })
-      hl.bind("XF86AudioRaiseVolume",   hl.dsp.exec_cmd("wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
-      hl.bind("XF86AudioLowerVolume",   hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"), { locked = true, repeating = true })
-      hl.bind("XF86AudioMute",          hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"), { locked = true, repeating = true })
+    bind = SUPER, 1, workspace, 1
+    bind = SUPER, 2, workspace, 2
+    bind = SUPER, 3, workspace, 3
+    bind = SUPER, 4, workspace, 4
+    bind = SUPER, 5, workspace, 5
 
-      -- Mouse binds
-      hl.bind("SUPER + mouse:272",      hl.dsp.window.drag(),   { mouse = true })
-      hl.bind("SUPER + mouse:273",      hl.dsp.window.resize(), { mouse = true })
+    bind = SUPER SHIFT, 1, movetoworkspace, 1
+    bind = SUPER SHIFT, 2, movetoworkspace, 2
+    bind = SUPER SHIFT, 3, movetoworkspace, 3
+    bind = SUPER SHIFT, 4, movetoworkspace, 4
+    bind = SUPER SHIFT, 5, movetoworkspace, 5
 
-      -- Window rules for other apps
-      hl.window_rule({
-          name   = "pavucontrol",
-          match  = { class = "org.pulseaudio.pavucontrol" },
-          float  = true,
-          center = true,
-          size   = "900 600",
-      })
-      hl.window_rule({
-          name   = "rofi",
-          match  = { class = "rofi" },
-          float  = true,
-          center = true,
-      })
-      hl.window_rule({
-          name   = "claude-desktop",
-          match  = { class = "claude-desktop" },
-          float  = true,
-          center = true,
-          size   = "60% 80%",
-      })
-      hl.window_rule({
-          name   = "waypaper",
-          match  = { class = "waypaper" },
-          float  = true,
-          center = true,
-          size   = "60% 70%",
-      })
-      -- wlctl window rule
-      hl.window_rule({
-          name   = "wlctl",
-          match  = { title = "wlctl" },
-          float  = true,
-          center = true,
-          size   = "900 550",
-      })
-    '';
-  };
+    bindel = , XF86MonBrightnessUp, exec, brightnessctl set +5%
+    bindel = , XF86MonBrightnessDown, exec, brightnessctl set 5%-
+
+    bindel = , XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+
+    bindel = , XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+    bindl = , XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+
+    bindm = SUPER, mouse:272, movewindow
+    bindm = SUPER, mouse:273, resizewindow
+
+    windowrule = match:class ^(org.pulseaudio.pavucontrol)$, float on, center on, size 900 600
+    windowrule = match:class ^(rofi)$, float on, center on
+    windowrule = match:class ^(claude-desktop)$, float on, center on, size 60% 80%
+    windowrule = match:class ^(waypaper)$, float on, center on, size 60% 70%
+    windowrule = match:initialTitle ^(wlctl)$, float on, center on, size 900 550
+  '';
+
+  home.activation.removeStaleHyprlandLua = config.lib.dag.entryAfter ["writeBoundary"] ''
+    rm -f $HOME/.config/hypr/hyprland.lua
+  '';
 
   # ── Claude Desktop wrapper ──
   home.packages = with pkgs; [
