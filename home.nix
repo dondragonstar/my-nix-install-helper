@@ -1,4 +1,4 @@
-{ config, pkgs, username, hostname, ... }:
+{ config, pkgs, username, hostname, gazelle, ... }:
 
 let
   theme = import ./theme.nix;
@@ -207,6 +207,13 @@ in
   # ── Alacritty ──
   home.file.".config/alacritty/alacritty.toml".source = ./alacritty.toml;
 
+  # ── Gazelle (NetworkManager TUI) ──
+  home.file.".config/gazelle/config.json".text = ''
+    {
+      "theme": "catppuccin-mocha"
+    }
+  '';
+
   # Minimal placeholder Hyprland config so the compositor starts with
   # *something* on first login instead of a blank/black screen.
   # You will replace this with your own dotfiles once booted.
@@ -250,6 +257,7 @@ in
 
     bind = SUPER, Return, exec, alacritty
     bind = SUPER, W, killactive,
+    bind = SUPER SHIFT, W, exec, alacritty --title 'Network Manager' -e gazelle
     bind = SUPER, M, exit,
     bind = SUPER, E, exec, zeditor
     bind = SUPER SHIFT, F, exec, thunar
@@ -286,8 +294,9 @@ in
     windowrule = match:class ^(rofi)$, float on, center on
     windowrule = match:class ^(claude-desktop)$, float on, center on, size 60% 80%
     windowrule = match:class ^(waypaper)$, float on, center on, size 60% 70%
-    windowrule = match:title ^(Network Manager)$, float on, center on, size 800 600
-    windowrule = opacity 0.95, match:title ^(Network Manager)$
+    windowrule = match:title ^(Network Manager)$, float on, center on, size 900 550
+    windowrule = dimaround, match:title ^(Network Manager)$
+    windowrule = opacity 0.95 0.90, match:title ^(Network Manager)$
   '';
 
   # ── Claude Desktop wrapper ──
@@ -316,6 +325,7 @@ in
     pavucontrol
     networkmanagerapplet
     # networkmanager_dmenu
+    gazelle.packages.${pkgs.system}.default
     awww
     waypaper
     (pkgs.writeShellScriptBin "swww" "exec ${pkgs.awww}/bin/awww \"$@\"")

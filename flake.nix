@@ -7,9 +7,10 @@
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    gazelle.url = "github:Zeus-Deus/gazelle-tui";
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }: let
+  outputs = { self, nixpkgs, home-manager, gazelle, ... }: let
     # ── MACHINE-SPECIFIC: change these on a new system ──
     hostname = "hydragon2000-pc";
     username = "hydragon2000";
@@ -24,7 +25,7 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = { inherit hostname username; };
+          home-manager.extraSpecialArgs = { inherit hostname username gazelle; };
           home-manager.users.${username} = import ./home.nix;
           home-manager.backupFileExtension = "hm-backup";
         }

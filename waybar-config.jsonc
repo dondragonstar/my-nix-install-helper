@@ -45,7 +45,7 @@
     "format-ethernet": "󰈀",
     "format-disconnected": "󰖪",
     "tooltip-format": "{essid}\n{ipaddr}",
-    "on-click": "alacritty --title 'Network Manager' -e nmtui"
+    "on-click": "alacritty --title 'Network Manager' -e gazelle"
   },
 
   "cpu": {
