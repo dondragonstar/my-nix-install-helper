@@ -265,9 +265,7 @@ in
     windowrule = match:class ^(rofi)$, float on, center on
     windowrule = match:class ^(claude-desktop)$, float on, center on, size 60% 80%
     windowrule = match:class ^(waypaper)$, float on, center on, size 60% 70%
-    windowrule = float on, title:^(Network Manager)$
-    windowrule = center on, title:^(Network Manager)$
-    windowrule = size 800 600, title:^(Network Manager)$
+    windowrule = title:^(Network Manager)$, float, center, size 800 600
   '';
 
   # ── Claude Desktop wrapper ──
