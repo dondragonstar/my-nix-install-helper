@@ -234,58 +234,6 @@ in
         position = "auto",
         scale    = "auto",
     })
-
-    hl.on("hyprland.start", function()
-        hl.exec_cmd("waybar")
-        hl.exec_cmd("awww-daemon")
-        hl.exec_cmd("sleep 1 && awww img ~/Pictures/Wallpapers/wallpaper1.jpg")
-    end)
-
-    hl.env("XCURSOR_THEME", "Bibata-Modern-Classic")
-    hl.env("XCURSOR_SIZE", "24")
-    hl.env("HYPRCURSOR_SIZE", "24")
-
-    hl.config({
-        input = {
-            kb_layout    = "us",
-            follow_mouse = 1,
-            touchpad = {
-                natural_scroll = true,
-            },
-        },
-        general = {
-            gaps_in    = 4,
-            gaps_out   = 8,
-            border_size = 2,
-        },
-        decoration = {
-            rounding = 6,
-        },
-    })
-
-    hl.bind("SUPER + Return", hl.dsp.exec_cmd("alacritty"))
-    hl.bind("SUPER + W", hl.dsp.window.close())
-    hl.bind("SUPER SHIFT + W", hl.dsp.exec_cmd("alacritty --title wlctl -e wlctl"))
-    hl.bind("SUPER + M", hl.dsp.exec_cmd("hyprctl dispatch exit"))
-    hl.bind("SUPER + Space", hl.dsp.exec_cmd("rofi -show drun"))
-
-    hl.bind("SUPER + 1", hl.dsp.focus({ workspace = 1 }))
-    hl.bind("SUPER + 2", hl.dsp.focus({ workspace = 2 }))
-
-    hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
-    hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"), { locked = true, repeating = true })
-    hl.bind("XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"), { locked = true, repeating = true })
-
-    hl.bind("SUPER + mouse:272", hl.dsp.window.drag(), { mouse = true })
-    hl.bind("SUPER + mouse:273", hl.dsp.window.resize(), { mouse = true })
-
-    hl.window_rule({
-        name   = "wlctl",
-        match  = { title = "wlctl" },
-        float  = true,
-        center = true,
-        size   = "900 550",
-    })
   '';
 
   # Remove stale hyprland.conf stub so Hyprland reads our .lua config
