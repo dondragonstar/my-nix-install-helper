@@ -12,7 +12,10 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.configurationLimit = 3;
 
-  boot.kernelParams = [ "nvidia-drm.modeset=1" ];
+  boot.kernelParams = [
+    "nvidia-drm.modeset=1"
+    "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
+  ];
 
   ##############################################################
   ## Networking
@@ -61,6 +64,11 @@
     nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
 
+    powerManagement = {
+      enable = true;
+      finegrained = true;
+    };
+
     prime = {
       offload = {
         enable = true;
@@ -93,6 +101,16 @@
   services.displayManager.autoLogin.enable = true;
   services.displayManager.autoLogin.user = username;
   services.displayManager.defaultSession = "hyprland";
+
+  ##############################################################
+  ## Power management / lid-close suspend
+  ##############################################################
+  services.logind = {
+    lidSwitch = "suspend";
+    lidSwitchExternalPower = "suspend";
+    lidSwitchDocked = "ignore";
+    powerKey = "suspend";
+  };
 
   ##############################################################
   ## Audio
