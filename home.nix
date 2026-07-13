@@ -426,6 +426,8 @@ in
     rustfmt
     clippy
     rust-analyzer
+    nodejs
+    pnpm
     python3
     telegram-desktop
     vlc
