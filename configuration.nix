@@ -122,9 +122,14 @@
   users.users.${username} = {
     isNormalUser = true;
     description = username;
-    extraGroups = [ "wheel" "networkmanager" "video" "input" ];
+    extraGroups = [ "wheel" "networkmanager" "video" "input" "docker" ];
     shell = pkgs.zsh;
   };
+
+  ##############################################################
+  ## Docker
+  ##############################################################
+  virtualisation.docker.enable = true;
 
   programs.zsh.enable = true;
 

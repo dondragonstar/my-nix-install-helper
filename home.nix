@@ -162,13 +162,13 @@ in
       Unit.Wants = [ "elephant.service" ];
       Unit.After = [ "default.target" ];
       Unit.PartOf = lib.mkForce [ ];
-      Unit.ConditionEnvironment = lib.mkForce null;
+      Unit.ConditionEnvironment = lib.mkForce [ ];
     };
     elephant = {
       Install.WantedBy = lib.mkForce [ "default.target" ];
       Unit.After = [ "default.target" ];
       Unit.PartOf = lib.mkForce [ ];
-      Unit.ConditionEnvironment = lib.mkForce null;
+      Unit.ConditionEnvironment = lib.mkForce [ ];
     };
   };
 
