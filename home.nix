@@ -289,8 +289,9 @@ in
     exec-once = sleep 1 && awww img ~/Pictures/Wallpapers/wallpaper1.jpg
     exec-once = hyprctl setcursor Bibata-Modern-Classic 24
 
-    # Restart walker after Hyprland sets up WAYLAND_DISPLAY so launched apps inherit proper env
-    exec-once = sleep 1 && systemctl --user restart walker.service
+    # Restart walker + elephant after Hyprland sets up WAYLAND_DISPLAY
+    # so both services and their providers inherit proper env for launching apps
+    exec-once = sleep 1 && systemctl --user restart walker.service elephant.service
 
     env = XCURSOR_THEME,Bibata-Modern-Classic
     env = XCURSOR_SIZE,24
