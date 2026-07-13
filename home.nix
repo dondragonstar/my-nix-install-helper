@@ -1,4 +1,4 @@
-{ config, pkgs, username, hostname, wlctl, walker, ... }:
+{ config, pkgs, lib, username, hostname, wlctl, walker, ... }:
 
 let
   theme = import ./theme.nix;
@@ -152,10 +152,24 @@ in
     };
   };
 
-  # Walker + Elephant must start with default.target, not graphical-session.target
+  # Walker + Elephant: drop ConditionEnvironment=WAYLAND_DISPLAY so they
+  # don't get skipped at boot (systemd env doesn't have it at start time).
+  # Use Wants instead of Requires so walker doesn't block on elephant.
   systemd.user.services = {
-    walker.Install.WantedBy = [ "default.target" ];
-    elephant.Install.WantedBy = [ "default.target" ];
+    walker = {
+      Install.WantedBy = lib.mkForce [ "default.target" ];
+      Unit.Requires = lib.mkForce [ ];
+      Unit.Wants = [ "elephant.service" ];
+      Unit.After = [ "default.target" ];
+      Unit.PartOf = lib.mkForce [ ];
+      Unit.ConditionEnvironment = lib.mkForce null;
+    };
+    elephant = {
+      Install.WantedBy = lib.mkForce [ "default.target" ];
+      Unit.After = [ "default.target" ];
+      Unit.PartOf = lib.mkForce [ ];
+      Unit.ConditionEnvironment = lib.mkForce null;
+    };
   };
 
   # ── SSH config: pick the right key per account ──
