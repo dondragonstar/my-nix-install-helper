@@ -106,12 +106,14 @@
   ## Power management / lid-close suspend
   ##############################################################
   services.logind = {
-    extraConfig = ''
-      HandleLidSwitch=suspend
-      HandleLidSwitchExternalPower=suspend
-      HandleLidSwitchDocked=ignore
-      HandlePowerKey=suspend
-    '';
+    settings = {
+      Login = {
+        HandleLidSwitch = "suspend";
+        HandleLidSwitchExternalPower = "suspend";
+        HandleLidSwitchDocked = "ignore";
+        HandlePowerKey = "suspend";
+      };
+    };
   };
 
   ##############################################################
