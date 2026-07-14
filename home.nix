@@ -11,11 +11,6 @@ in
   # ── Environment variables ──
   home.sessionVariables = {
     QT_QPA_PLATFORMTHEME = "gtk3";
-    XDG_DATA_DIRS = [
-      "$HOME/.nix-profile/share"
-      "/run/current-system/sw/share"
-      "$XDG_DATA_DIRS"
-    ];
   };
 
   # Let Home Manager manage itself.
