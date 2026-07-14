@@ -124,11 +124,6 @@ in
     [columns]
     symbols = 1
 
-    [builtins.applications]
-    launch_prefix = "uwsm app -- "
-    hidden = false
-    history = true
-
     [providers]
     max_results = 256
     default = [ "desktopapplications", "websearch" ]
@@ -165,6 +160,11 @@ in
   # Theme files at the Omarchy location
   home.file.".local/share/omarchy/default/walker/themes/omarchy-default/style.css".source = ./walker-style.css;
   home.file.".local/share/omarchy/default/walker/themes/omarchy-default/layout.xml".source = ./walker-layout.xml;
+
+  # Elephant config: use uwsm as launch prefix so apps get proper session activation
+  xdg.configFile."elephant/elephant.toml".text = ''
+    launch_prefix = "uwsm app --"
+  '';
 
   # Elephant systemd service — no ConditionEnvironment so it starts at boot
   # (elephant doesn't need Wayland; it's a data provider)
@@ -303,8 +303,8 @@ in
     # Import Wayland display into systemd user manager so services inherit it
     exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
 
-    # Walker daemon (uwsm-wrapped for proper session activation)
-    exec-once = sleep 2 && uwsm app -- walker --gapplication-service
+    # Walker daemon (delayed for elephant + Wayland readiness)
+    exec-once = sleep 2 && walker --gapplication-service
 
     env = XCURSOR_THEME,Bibata-Modern-Classic
     env = XCURSOR_SIZE,24
