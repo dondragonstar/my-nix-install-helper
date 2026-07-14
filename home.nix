@@ -1,13 +1,9 @@
-{ config, pkgs, lib, username, hostname, wlctl, walker, ... }:
+{ config, pkgs, lib, username, hostname, wlctl, ... }:
 
 let
   theme = import ./theme.nix;
 in
 {
-  imports = [
-    walker.homeManagerModules.default
-  ];
-
   home.username = username;
   home.homeDirectory = "/home/${username}";
   home.stateVersion = "26.05";
@@ -15,6 +11,11 @@ in
   # ── Environment variables ──
   home.sessionVariables = {
     QT_QPA_PLATFORMTHEME = "gtk3";
+    XDG_DATA_DIRS = [
+      "$HOME/.nix-profile/share"
+      "/run/current-system/sw/share"
+      "$XDG_DATA_DIRS"
+    ];
   };
 
   # Let Home Manager manage itself.
@@ -108,60 +109,83 @@ in
     };
   };
 
-  # ── Walker (app launcher) ──
-  programs.walker = {
-    enable = true;
-    runAsService = false;
+  # ── Walker (app launcher) + Elephant (desktop indexer) ──
+  # Manual setup (no HM module — clean slate per Omarchy reference).
 
-    config = {
-      force_keyboard_focus = true;
-      selection_wrap = true;
-      theme = "omarchy-default";
-      hide_action_hints = true;
+  # Walker config (generated from Nix)
+  xdg.configFile."walker/config.toml".text = ''
+    force_keyboard_focus = true
+    selection_wrap = true
+    theme = "omarchy-default"
+    additional_theme_location = "~/.local/share/omarchy/default/walker/themes/"
+    hide_action_hints = true
 
-      placeholders."default" = {
-        input = " Search...";
-        list = "No Results";
-      };
+    [placeholders]
+    "default" = { input = " Search...", list = "No Results" }
 
-      keybinds.quick_activate = [];
+    [keybinds]
+    quick_activate = []
 
-      columns.symbols = 1;
+    [columns]
+    symbols = 1
 
-      providers = {
-        max_results = 256;
-        default = [ "desktopapplications" "websearch" ];
-        prefixes = [
-          { prefix = "/"; provider = "providerlist"; }
-          { prefix = "."; provider = "files"; }
-          { prefix = ":"; provider = "symbols"; }
-          { prefix = "="; provider = "calc"; }
-          { prefix = "@"; provider = "websearch"; }
-          { prefix = "$"; provider = "clipboard"; }
-        ];
-      };
+    [builtins.applications]
+    launch_prefix = "uwsm app -- "
+    hidden = false
+    history = true
 
-      emergencies = [
-        { text = "Restart Walker"; command = "pkill walker || true; walker --gapplication-service &"; }
-      ];
+    [providers]
+    max_results = 256
+    default = [ "desktopapplications", "websearch" ]
+
+    [[providers.prefixes]]
+    prefix = "/"
+    provider = "providerlist"
+
+    [[providers.prefixes]]
+    prefix = "."
+    provider = "files"
+
+    [[providers.prefixes]]
+    prefix = ":"
+    provider = "symbols"
+
+    [[providers.prefixes]]
+    prefix = "="
+    provider = "calc"
+
+    [[providers.prefixes]]
+    prefix = "@"
+    provider = "websearch"
+
+    [[providers.prefixes]]
+    prefix = "$"
+    provider = "clipboard"
+
+    [[emergencies]]
+    text = "Restart Walker"
+    command = "pkill walker || true; uwsm app -- walker --gapplication-service &"
+  '';
+
+  # Theme files at the Omarchy location
+  home.file.".local/share/omarchy/default/walker/themes/omarchy-default/style.css".source = ./walker-style.css;
+  home.file.".local/share/omarchy/default/walker/themes/omarchy-default/layout.xml".source = ./walker-layout.xml;
+
+  # Elephant systemd service — no ConditionEnvironment so it starts at boot
+  # (elephant doesn't need Wayland; it's a data provider)
+  systemd.user.services.elephant = {
+    Unit = {
+      Description = "Elephant launcher backend";
+      After = [ "default.target" ];
     };
-
-    themes."omarchy-default" = {
-      style = builtins.readFile ./walker-style.css;
-      layouts.layout = builtins.readFile ./walker-layout.xml;
+    Service = {
+      Type = "simple";
+      ExecStart = "${pkgs.elephant}/bin/elephant";
+      Restart = "on-failure";
+      RestartSec = 1;
+      ExecStopPost = "${pkgs.coreutils}/bin/rm -f /tmp/elephant.sock";
     };
-  };
-
-  # Elephant: drop ConditionEnvironment=WAYLAND_DISPLAY so it
-  # doesn't get skipped at boot (systemd env doesn't have it at start time).
-  # Walker daemon starts via Hyprland exec-once (runAsService = false).
-  systemd.user.services = {
-    elephant = {
-      Install.WantedBy = lib.mkForce [ "default.target" ];
-      Unit.After = [ "default.target" ];
-      Unit.PartOf = lib.mkForce [ ];
-      Unit.ConditionEnvironment = lib.mkForce [ ];
-    };
+    Install.WantedBy = [ "default.target" ];
   };
 
   # ── SSH config: pick the right key per account ──
@@ -284,8 +308,8 @@ in
     # Import Wayland display into systemd user manager so services inherit it
     exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
 
-    # Walker daemon (delayed for elephant + Wayland readiness)
-    exec-once = sleep 2 && walker --gapplication-service
+    # Walker daemon (uwsm-wrapped for proper session activation)
+    exec-once = sleep 2 && uwsm app -- walker --gapplication-service
 
     env = XCURSOR_THEME,Bibata-Modern-Classic
     env = XCURSOR_SIZE,24
@@ -370,6 +394,9 @@ in
       rm -f "/run/user/$(id -u)/claude-desktop-qe.sock"
       exec ${pkgs.appimage-run}/bin/appimage-run /home/${username}/Claude_Desktop-1.18286.0-x86_64.AppImage "$@"
     '')
+    walker
+    uwsm
+    elephant
     ripgrep
     fd
     btop

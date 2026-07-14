@@ -8,10 +8,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     wlctl.url = "github:aashish-thapa/wlctl";
-    walker.url = "github:abenz1267/walker/v2.16.2";
   };
 
-  outputs = { self, nixpkgs, home-manager, wlctl, walker, ... }: let
+  outputs = { self, nixpkgs, home-manager, wlctl, ... }: let
     # ── MACHINE-SPECIFIC: change these on a new system ──
     hostname = "hydragon2000-pc";
     username = "hydragon2000";
@@ -26,7 +25,7 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = { inherit hostname username wlctl walker; };
+          home-manager.extraSpecialArgs = { inherit hostname username wlctl; };
           home-manager.users.${username} = import ./home.nix;
           home-manager.backupFileExtension = "hm-backup";
         }
