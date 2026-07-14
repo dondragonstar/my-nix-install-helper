@@ -284,9 +284,6 @@ in
     # Import Wayland display into systemd user manager so services inherit it
     exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
 
-    # Walker daemon (delayed so Wayland is ready)
-    exec-once = sleep 2 && walker --gapplication-service
-
     env = XCURSOR_THEME,Bibata-Modern-Classic
     env = XCURSOR_SIZE,24
     env = HYPRCURSOR_SIZE,24
