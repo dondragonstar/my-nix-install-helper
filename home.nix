@@ -301,6 +301,7 @@ in
     exec-once = awww-daemon
     exec-once = sleep 1 && awww img ~/Pictures/Wallpapers/wallpaper1.jpg
     exec-once = hyprctl setcursor Bibata-Modern-Classic 24
+    exec-once = xwaylandvideobridge
 
     # Import Wayland display into systemd user manager so services inherit it
     exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
@@ -349,8 +350,8 @@ in
     bind = SUPER SHIFT, D, exec, qdirstat
     bind = SUPER SHIFT, U, exec, claude-desktop
     bind = SUPER SHIFT, B, exec, bluetuith-launcher
-    bind = , Print, exec, screenshot region
     bind = SHIFT, Print, exec, screenshot screen
+    bind = , Print, exec, xwaylandvideobridge
 
     bind = SUPER, 1, workspace, 1
     bind = SUPER, 2, workspace, 2
