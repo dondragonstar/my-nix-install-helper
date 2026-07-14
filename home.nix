@@ -154,7 +154,7 @@ in
 
   # Elephant: drop ConditionEnvironment=WAYLAND_DISPLAY so it
   # doesn't get skipped at boot (systemd env doesn't have it at start time).
-  # Walker runs directly under Hyprland (runAsService = false).
+  # Walker daemon starts via Hyprland exec-once (runAsService = false).
   systemd.user.services = {
     elephant = {
       Install.WantedBy = lib.mkForce [ "default.target" ];
@@ -283,6 +283,9 @@ in
 
     # Import Wayland display into systemd user manager so services inherit it
     exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
+
+    # Walker daemon (delayed for elephant + Wayland readiness)
+    exec-once = sleep 2 && walker --gapplication-service
 
     env = XCURSOR_THEME,Bibata-Modern-Classic
     env = XCURSOR_SIZE,24
