@@ -168,6 +168,7 @@
     pciutils
     ollama
     gnome-keyring
+    sqlite
     appimage-run
   ];
 
@@ -179,6 +180,7 @@
   programs.firefox.enable = true;
 
   services.gnome.gnome-keyring.enable = true;
+  security.pam.services.sddm.enableGnomeKeyring = true;
 
   system.stateVersion = "26.05";
 }

@@ -111,7 +111,7 @@ in
   # ── Walker (app launcher) ──
   programs.walker = {
     enable = true;
-    runAsService = true;
+    runAsService = false;
 
     config = {
       force_keyboard_focus = true;
@@ -152,18 +152,10 @@ in
     };
   };
 
-  # Walker + Elephant: drop ConditionEnvironment=WAYLAND_DISPLAY so they
-  # don't get skipped at boot (systemd env doesn't have it at start time).
-  # Use Wants instead of Requires so walker doesn't block on elephant.
+  # Elephant: drop ConditionEnvironment=WAYLAND_DISPLAY so it
+  # doesn't get skipped at boot (systemd env doesn't have it at start time).
+  # Walker runs directly under Hyprland (runAsService = false).
   systemd.user.services = {
-    walker = {
-      Install.WantedBy = lib.mkForce [ "default.target" ];
-      Unit.Requires = lib.mkForce [ ];
-      Unit.Wants = [ "elephant.service" ];
-      Unit.After = [ "default.target" ];
-      Unit.PartOf = lib.mkForce [ ];
-      Unit.ConditionEnvironment = lib.mkForce [ ];
-    };
     elephant = {
       Install.WantedBy = lib.mkForce [ "default.target" ];
       Unit.After = [ "default.target" ];
@@ -289,9 +281,11 @@ in
     exec-once = sleep 1 && awww img ~/Pictures/Wallpapers/wallpaper1.jpg
     exec-once = hyprctl setcursor Bibata-Modern-Classic 24
 
-    # Restart walker + elephant after Hyprland sets up WAYLAND_DISPLAY
-    # so both services and their providers inherit proper env for launching apps
-    exec-once = sleep 1 && systemctl --user restart walker.service elephant.service
+    # Import Wayland display into systemd user manager so services inherit it
+    exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
+
+    # Walker daemon (delayed so Wayland is ready)
+    exec-once = sleep 2 && walker --gapplication-service
 
     env = XCURSOR_THEME,Bibata-Modern-Classic
     env = XCURSOR_SIZE,24
@@ -370,6 +364,9 @@ in
   # ── Claude Desktop wrapper ──
   home.packages = with pkgs; [
     (pkgs.writeShellScriptBin "claude-desktop" ''
+      # Clean up stale IPC socket from previous runs (Electron apps leave this behind
+      # when quit from tray, which blocks the next launch)
+      rm -f "/run/user/$(id -u)/claude-desktop-qe.sock"
       exec ${pkgs.appimage-run}/bin/appimage-run /home/${username}/Claude_Desktop-1.18286.0-x86_64.AppImage "$@"
     '')
     ripgrep
