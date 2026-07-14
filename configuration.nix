@@ -170,7 +170,6 @@
     curl
     waybar
     firefox
-    xwaylandvideobridge
     pciutils
     ollama
     gnome-keyring
