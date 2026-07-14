@@ -12,6 +12,7 @@ in
   home.sessionVariables = {
     QT_QPA_PLATFORMTHEME = "gtk3";
     NIXOS_OZONE_WL = "1";
+    ELECTRON_OZONE_PLATFORM_HINT = "auto";
   };
 
   # Let Home Manager manage itself.
@@ -307,7 +308,8 @@ in
     exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
 
     # Walker daemon (delayed for elephant + Wayland readiness)
-    exec-once = uwsm app -- walker --gapplication-service
+    # We use a small helper that ensures elephant is running before launching walker
+    exec-once = uwsm app -- sh -c 'systemctl --user start elephant && walker --gapplication-service'
 
     env = XCURSOR_THEME,Bibata-Modern-Classic
     env = XCURSOR_SIZE,24
@@ -469,5 +471,6 @@ in
     poppler
     glib
     discord
+    vesktop
   ];
 }
