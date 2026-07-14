@@ -118,8 +118,9 @@ in
     [placeholders]
     "default" = { input = " Search...", list = "No Results" }
 
-    [keybinds]
-    quick_activate = []
+    [builtins.applications]
+    launch_prefix = "uwsm app -- "
+    history = true
 
     [columns]
     symbols = 1
@@ -166,21 +167,22 @@ in
     launch_prefix = "uwsm app --"
   '';
 
-  # Elephant systemd service — no ConditionEnvironment so it starts at boot
-  # (elephant doesn't need Wayland; it's a data provider)
+  # Elephant systemd service — ensure it starts with the graphical session
   systemd.user.services.elephant = {
     Unit = {
       Description = "Elephant launcher backend";
-      After = [ "default.target" ];
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
     };
     Service = {
       Type = "simple";
       ExecStart = "${pkgs.elephant}/bin/elephant";
-      Restart = "on-failure";
-      RestartSec = 1;
-      ExecStopPost = "${pkgs.coreutils}/bin/rm -f /tmp/elephant.sock";
+      Restart = "always";
+      RestartSec = 2;
     };
-    Install.WantedBy = [ "default.target" ];
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
   };
 
   # ── SSH config: pick the right key per account ──
@@ -304,7 +306,7 @@ in
     exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
 
     # Walker daemon (delayed for elephant + Wayland readiness)
-    exec-once = sleep 2 && walker --gapplication-service
+    exec-once = uwsm app -- walker --gapplication-service
 
     env = XCURSOR_THEME,Bibata-Modern-Classic
     env = XCURSOR_SIZE,24
@@ -346,6 +348,7 @@ in
     bind = SUPER SHIFT, Space, exec, waypaper --backend swww
     bind = SUPER SHIFT, D, exec, qdirstat
     bind = SUPER SHIFT, U, exec, claude-desktop
+    bind = SUPER SHIFT, B, exec, bluetuith-launcher
     bind = , Print, exec, screenshot region
     bind = SHIFT, Print, exec, screenshot screen
 
@@ -375,6 +378,7 @@ in
     windowrule = match:class ^(claude-desktop)$, float on, center on, size 60% 80%
     windowrule = match:class ^(waypaper)$, float on, center on, size 60% 70%
     windowrule = match:title ^(wlctl)$, float on, center on, size 900 550
+    windowrule = match:title ^(bluetuith)$, float on, center on, size 900 550
   '';
 
   home.activation.removeStaleHyprlandLua = config.lib.dag.entryAfter ["writeBoundary"] ''
@@ -409,6 +413,11 @@ in
     thunar
     gvfs
     pavucontrol
+    (pkgs.writeShellScriptBin "bluetuith-launcher" ''
+      exec alacritty --title bluetuith -e bluetuith "$@"
+    '')
+    blueman
+    bluetuith
     wlctl.packages.${pkgs.stdenv.hostPlatform.system}.default
     awww
     waypaper

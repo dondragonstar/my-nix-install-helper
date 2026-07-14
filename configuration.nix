@@ -90,7 +90,7 @@
 
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
+    extraPortals = [ pkgs.xdg-desktop-portal-hyprland pkgs.xdg-desktop-portal-gtk ];
   };
 
   ##############################################################
@@ -127,6 +127,11 @@
     alsa.support32Bit = true;
     pulse.enable = true;
   };
+
+  # ── Bluetooth ──
+  hardware.bluetooth.enable = true;
+  hardware.bluetooth.powerOnBoot = true;
+  services.blueman.enable = true;
 
   ##############################################################
   ## Ollama (local AI models)
