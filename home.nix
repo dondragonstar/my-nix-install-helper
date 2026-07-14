@@ -323,6 +323,7 @@ in
     bind = SUPER, Space, exec, walker
     bind = SUPER SHIFT, Space, exec, waypaper --backend swww
     bind = SUPER SHIFT, D, exec, qdirstat
+    bind = SUPER SHIFT, U, exec, claude-desktop
     bind = , Print, exec, screenshot region
     bind = SHIFT, Print, exec, screenshot screen
 
