@@ -15,6 +15,9 @@ in
     ELECTRON_OZONE_PLATFORM_HINT = "auto";
   };
 
+  # ── User binary PATH (RTK and other manually installed tools) ──
+  home.sessionPath = [ "$HOME/.local/bin" ];
+
   # Let Home Manager manage itself.
   programs.home-manager.enable = true;
 
