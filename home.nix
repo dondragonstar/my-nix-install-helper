@@ -405,6 +405,7 @@ in
     zed-editor
     alacritty
     antigravity
+    claude-code
     starship
     zoxide
     fzf
