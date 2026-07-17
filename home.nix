@@ -13,6 +13,8 @@ in
     QT_QPA_PLATFORMTHEME = "gtk3";
     NIXOS_OZONE_WL = "1";
     ELECTRON_OZONE_PLATFORM_HINT = "auto";
+    # Force pipewire screen sharing for Electron apps
+    XDG_SCREENSHOTS_DIR = "$HOME/Pictures/Screenshots";
   };
 
   # ── User binary PATH (RTK and other manually installed tools) ──

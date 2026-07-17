@@ -8,8 +8,11 @@ if not diff:
     sys.exit(1)
 
 prompt = f"""You are a git commit message generator for a NixOS configuration repository.
-Given the following git diff, describe WHAT changed and WHY in a concise commit message.
-Start with a subject line under 72 characters, then a blank line, then a short body.
+Given the following git diff, describe WHAT changed and WHY.
+Follow Conventional Commit format: (type: scope: description).
+Keep the subject under 50 characters.
+Include a brief list of changes.
+Keep the total message under 200 characters.
 
 Diff:
 {diff}"""
