@@ -27,25 +27,34 @@ in
     enable = true;
 
     settings = {
-      user = {
-        name = "dondragonstar";
-        email = "dondragonstar@gmail.com";
-      };
+      # No global user — handled by per-directory includes below.
+      # Order matters: git processes config top-to-bottom.
+      # gitdir:~  matches everything under $HOME; gitdir:~/Projects/professional/ is more specific.
+      # For professional repos, both match — personal loads first, professional overrides second.
 
-      # Automatically switch to professional config under ~/Projects/professional/
       includeIf."gitdir:~/Projects/professional/" = {
         path = "~/.gitconfig-professional";
+      };
+
+      includeIf."gitdir:~/" = {
+        path = "~/.gitconfig-personal";
       };
     };
   };
 
-  # ── Professional git overrides ──
+  # ── Personal git identity (applies to all repos except professional) ──
+  home.file.".gitconfig-personal".text = ''
+    [user]
+      name = dondragonstar
+      email = dondragonstar@gmail.com
+  '';
+
+  # ── Professional git identity and URL rewrite ──
   home.file.".gitconfig-professional".text = ''
     [user]
       name = DevaJ2005
       email = devajb01@gmail.com
 
-    # Rewrite GitHub URLs so the right SSH key is used
     [url "git@github-professional:"]
       insteadOf = git@github.com:
   '';
