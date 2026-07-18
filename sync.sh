@@ -4,6 +4,8 @@ set -e
 REPO_DIR="/etc/nixos/repo"
 NIXOS_DIR="/etc/nixos"
 CONFIGS_MASTER="$HOME/CONFIGS_MASTER.md"
+GIT_OPS="$HOME/GIT_OPS.md"
+CLAUDE_CONFIG="$HOME/.claude/CLAUDE.md"
 
 FILES=(
   configuration.nix
@@ -26,10 +28,20 @@ for f in "${FILES[@]}"; do
   fi
 done
 
-# Also sync CONFIGS_MASTER.md so changes to it are tracked in the repo
-if [ -f "$CONFIGS_MASTER" ]; then
-  cp "$CONFIGS_MASTER" "$REPO_DIR/CONFIGS_MASTER.md"
-  echo "  copied CONFIGS_MASTER.md"
+# Sync home-root instruction files so they're backed up in the repo
+for f in "$CONFIGS_MASTER" "$GIT_OPS"; do
+  dest="$REPO_DIR/$(basename "$f")"
+  if [ -f "$f" ]; then
+    cp "$f" "$dest"
+    echo "  copied $(basename "$f")"
+  fi
+done
+
+# Sync CLAUDE.md (AI global instructions)
+if [ -f "$CLAUDE_CONFIG" ]; then
+  mkdir -p "$REPO_DIR/.claude"
+  cp "$CLAUDE_CONFIG" "$REPO_DIR/.claude/CLAUDE.md"
+  echo "  copied .claude/CLAUDE.md"
 fi
 
 cd "$REPO_DIR"
