@@ -367,6 +367,7 @@ in
     bind = SUPER SHIFT, U, exec, claude-desktop
     bind = SUPER SHIFT, B, exec, bluetuith-launcher
     bind = SHIFT, Print, exec, screenshot screen
+    bind = SUPER, Print, exec, screenshot region
 
     bind = SUPER, 1, workspace, 1
     bind = SUPER, 2, workspace, 2
@@ -428,6 +429,7 @@ in
     brightnessctl
     playerctl
     thunar
+    tumbler
     gvfs
     pavucontrol
     (pkgs.writeShellScriptBin "bluetuith-launcher" ''
