@@ -91,6 +91,17 @@ in
   # ── XDG / Desktop entries ──
   xdg.enable = true;
 
+  # ── Vesktop: forced flags for screen sharing ──
+  xdg.desktopEntries."vesktop" = {
+    name = "Vesktop";
+    exec = "vesktop --ozone-platform-hint=auto --enable-features=WebRTCPipeWireCapturer --disable-gpu-sandbox %U";
+    icon = "vesktop";
+    type = "Application";
+    categories = [ "Network" "InstantMessaging" "Chat" ];
+    mimeType = [ "x-scheme-handler/discord" ];
+    settings.StartupWMClass = "Vesktop";
+  };
+
   # ── Claude Desktop entry ──
   xdg.desktopEntries."claude-desktop" = {
     name = "Claude";
