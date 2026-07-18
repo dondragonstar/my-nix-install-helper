@@ -324,6 +324,7 @@ in
     # Walker daemon (delayed for elephant + Wayland readiness)
     # We use a small helper that ensures elephant is running before launching walker
     exec-once = uwsm app -- sh -c 'systemctl --user start elephant && walker --gapplication-service'
+    exec-once = systemctl --user start tumblerd
 
     env = XCURSOR_THEME,Bibata-Modern-Classic
     env = XCURSOR_SIZE,24
@@ -445,8 +446,8 @@ in
     (pkgs.writeShellScriptBin "screenshot" ''
       dir="$HOME/Pictures/Screenshots"
       mkdir -p "$dir"
-      app=$(hyprctl activewindow | grep '^title: ' | sed 's/^title: //' | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '_' | sed 's/_*$//')
-      [ -z "$app" ] && app=$(hyprctl activewindow | grep '^class: ' | sed 's/^class: //' | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '_' | sed 's/_*$//')
+      app=$(hyprctl activewindow | grep -oP '^[[:blank:]]*title: \K.*' | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '_' | sed 's/_*$//')
+      [ -z "$app" ] && app=$(hyprctl activewindow | grep -oP '^[[:blank:]]*class: \K.*' | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '_' | sed 's/_*$//')
       [ -z "$app" ] && app="unknown"
       ts=$(date +%H_%M_%d_%m_%y)
       case "''${1:-screen}" in
