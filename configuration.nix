@@ -1,4 +1,4 @@
-{ config, lib, pkgs, hostname, username, ... }:
+{ config, lib, pkgs, hostname, username, machine, ... }:
 
 {
   # hardware-configuration.nix is imported via flake.nix's modules list,
@@ -12,11 +12,6 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.systemd-boot.configurationLimit = 3;
 
-  boot.kernelParams = [
-    "nvidia-drm.modeset=1"
-    "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
-  ];
-
   ##############################################################
   ## Networking
   ##############################################################
@@ -26,7 +21,7 @@
   ##############################################################
   ## Time / Locale
   ##############################################################
-  time.timeZone = "Asia/Kolkata";
+  time.timeZone = machine.timezone;
   i18n.defaultLocale = "en_US.UTF-8";
 
   ##############################################################
@@ -46,39 +41,18 @@
   nixpkgs.config.allowUnfree = true;
 
   ##############################################################
-  ## Graphics / NVIDIA
-  ## MACHINE-SPECIFIC (section below) — edit or remove for different HW.
-  ## This laptop uses NVIDIA RTX 2050 + Intel iGPU (Optimus PRIME offload).
-  ## For a different GPU (AMD, Intel-only, etc.), replace accordingly.
+  ## Graphics (vendor-specific config lives in modules/hardware/,
+  ## selected by the gpu field in machine.nix)
   ##############################################################
   hardware.graphics = {
     enable = true;
     enable32Bit = true;
   };
 
-  services.xserver.videoDrivers = [ "nvidia" ];
-
-  hardware.nvidia = {
-    modesetting.enable = true;
-    open = false;
-    nvidiaSettings = true;
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
-
-    powerManagement = {
-      enable = true;
-      finegrained = true;
-    };
-
-    prime = {
-      offload = {
-        enable = true;
-        enableOffloadCmd = true;
-      };
-
-      intelBusId = "PCI:0@0:2:0";
-      nvidiaBusId = "PCI:1@0:0:0";
-    };
-  };
+  # CPU microcode per machine.nix (nixos-generate-config also sets a
+  # default; this makes the choice explicit and portable)
+  hardware.cpu.intel.updateMicrocode = lib.mkIf (machine.cpu == "intel") true;
+  hardware.cpu.amd.updateMicrocode = lib.mkIf (machine.cpu == "amd") true;
 
   ##############################################################
   ## Hyprland (via nixpkgs module)
@@ -139,7 +113,6 @@
   ##############################################################
   services.ollama = {
     enable = true;
-    package = pkgs.ollama-cuda;
     host = "127.0.0.1";
     port = 11434;
   };
