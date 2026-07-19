@@ -11,16 +11,26 @@
   };
 
   outputs = { self, nixpkgs, home-manager, wlctl, ... }: let
-    # ── MACHINE-SPECIFIC: change these on a new system ──
-    hostname = "hydragon2000-pc";
-    username = "hydragon2000";
+    machine = import ./machine.nix;
+    validGpus = [ "nvidia" "amd" "intel" "hybrid-nvidia" "vm" "generic" ];
+    gpu =
+      if builtins.elem machine.gpu validGpus
+      then machine.gpu
+      else throw ''
+        machine.nix error: gpu = "${machine.gpu}" is not a valid profile.
+        Valid values: ${builtins.concatStringsSep " | " validGpus}
+        Fix the gpu field in /etc/nixos/machine.nix and rebuild.
+      '';
+    hostname = machine.hostname;
+    username = machine.username;
   in {
     nixosConfigurations.${hostname} = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
-      specialArgs = { inherit hostname username; };
+      specialArgs = { inherit hostname username machine; };
       modules = [
         ./configuration.nix
         ./hardware-configuration.nix
+        (./. + "/modules/hardware/${gpu}.nix")
         home-manager.nixosModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
