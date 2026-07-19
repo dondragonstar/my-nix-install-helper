@@ -279,6 +279,8 @@ in
       ll = "ls -la";
       rebuild = "sudo nixos-rebuild switch --flake /etc/nixos#${hostname}";
       drybuild = "sudo nixos-rebuild dry-build --flake /etc/nixos#${hostname}";
+      update = "nix flake update /etc/nixos && sudo nixos-rebuild switch --flake /etc/nixos#${hostname}";
+      gcsize = "nix-store --gc --print-dead | tr '\\n' '\\0' | xargs -0 du -hc | tail -n 1";
       cat = "bat";
       ls = "eza";
     };
