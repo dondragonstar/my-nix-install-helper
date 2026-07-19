@@ -15,15 +15,19 @@ let
     if mods == "" then b.key
     else "${lib.replaceStrings [" "] [" + "] mods} + ${b.key}";
 
-  # JSON array fed to the rofi keybind menu
-  keybindsJSON = builtins.toJSON (map (b: {
-    keys = displayKeys b;
-    description = b.description;
-    category = b.category;
-  }) keybinds.binds);
-
   # All hyprland bind lines joined
   hyprlandBinds = lib.concatStringsSep "\n" (map mkBindLine keybinds.binds);
+
+  # Escape a string for use in Lua string literals
+  escapeLua = lib.replaceStrings ["\\" "\""] ["\\\\" "\\\""];
+
+  # Generate Lua table entries for the Elephant keybinds menu
+  keybindsLuaEntries = lib.concatStringsSep ",\n" (map (b: ''
+        {
+          Text = "${escapeLua b.description}",
+          Subtext = "${escapeLua (displayKeys b)}  (${b.category})",
+          Value = "${escapeLua (displayKeys b)}",
+        }'') keybinds.binds);
 in
 {
   home.username = username;
@@ -176,7 +180,12 @@ in
 
     [providers]
     max_results = 256
-    default = [ "desktopapplications", "websearch" ]
+    default = [ "desktopapplications", "websearch", "menus" ]
+
+    # Dedicated keybinds-only provider set for SUPER+H
+    [providers.sets.keybinds]
+    default = ["menus"]
+    empty = ["menus"]
 
     [[providers.prefixes]]
     prefix = "/"
@@ -201,6 +210,11 @@ in
     [[providers.prefixes]]
     prefix = "$"
     provider = "clipboard"
+
+    # Type ? to search keybinds exclusively
+    [[providers.prefixes]]
+    prefix = "?"
+    provider = "menus:keybinds"
 
     [[emergencies]]
     text = "Restart Walker"
@@ -397,8 +411,20 @@ in
     windowrule = match:title ^(bluetuith)$, float on, center on, size 900 550
   '';
 
-  # ── Keybind menu data (consumed by rofi keybinds.sh) ──
-  home.file.".config/rofi/keybinds.json".text = keybindsJSON;
+  # ── Keybind menu (Elephant Lua — integrated into Walker search) ──
+  home.file.".config/elephant/menus/keybinds.lua".text = ''
+    Name = "keybinds"
+    NamePretty = "Keybinds"
+    Icon = "preferences-desktop-keyboard-shortcuts"
+    Cache = false
+    Action = "sh -c 'echo -n %VALUE% | wl-copy && notify-send \"Keybinds\" \"Copied shortcut to clipboard\"'"
+
+    function GetEntries()
+      return {
+        ${keybindsLuaEntries}
+      }
+    end
+  '';
 
   home.activation.removeStaleHyprlandLua = config.lib.dag.entryAfter ["writeBoundary"] ''
     rm -f $HOME/.config/hypr/hyprland.lua
@@ -492,25 +518,7 @@ in
     glib
     discord
     vesktop
-    rofi-wayland
     jq
     libnotify
-    (pkgs.writeShellScriptBin "keybinds-menu" ''
-      set -e
-      CONFIG="$HOME/.config/rofi/keybinds.json"
-
-      if [ ! -f "$CONFIG" ]; then
-        notify-send "Keybinds" "Menu data not found. Run nixos-rebuild switch first."
-        exit 1
-      fi
-
-      SELECTED=$(jq -r '.[] | "\(.description)  [\(.keys)]"' "$CONFIG" | rofi -dmenu -i -p "Keybinds" -l 20)
-
-      if [ -n "$SELECTED" ]; then
-        KEYS=$(echo "$SELECTED" | sed -n 's/.*\[\(.*\)\].*/\1/p')
-        echo -n "$KEYS" | wl-copy
-        notify-send "Keybinds" "Copied '${KEYS}' to clipboard"
-      fi
-    '')
   ];
 }

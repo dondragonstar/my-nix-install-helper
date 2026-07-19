@@ -57,7 +57,7 @@
     { type = "bindel"; mods = ""; key = "XF86AudioLowerVolume";  action = "exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-";   description = "Lower volume";  category = "Audio"; }
     { type = "bindl";  mods = ""; key = "XF86AudioMute";         action = "exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle";  description = "Toggle mute";    category = "Audio"; }
 
-    # ── Keybind Menu (self-referential — the menu documents itself) ──
-    { mods = "SUPER"; key = "H";            action = "exec, keybinds-menu";        description = "Open this keybind menu";        category = "Keybinds"; }
+    # ── Keybind Menu (opens Walker in keybinds-only mode) ──
+    { mods = "SUPER"; key = "H";            action = "exec, walker -s keybinds";   description = "Search keybinds in Walker";      category = "Keybinds"; }
   ];
 }
