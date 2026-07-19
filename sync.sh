@@ -17,6 +17,7 @@ FILES=(
   alacritty.toml
   walker-style.css
   walker-layout.xml
+  keybinds.nix
 )
 
 echo "=== Syncing NixOS configs to repo ==="

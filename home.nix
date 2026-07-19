@@ -2,6 +2,28 @@
 
 let
   theme = import ./theme.nix;
+  keybinds = import ./keybinds.nix;
+
+  # Generate a Hyprland bind line from a keybind entry
+  mkBindLine = b:
+    let type = b.type or "bind"; in
+    "${type} = ${b.mods}, ${b.key}, ${b.action}";
+
+  # Human-readable key combo for the menu display
+  displayKeys = b:
+    let mods = b.mods or ""; in
+    if mods == "" then b.key
+    else "${lib.replaceStrings [" "] [" + "] mods} + ${b.key}";
+
+  # JSON array fed to the rofi keybind menu
+  keybindsJSON = builtins.toJSON (map (b: {
+    keys = displayKeys b;
+    description = b.description;
+    category = b.category;
+  }) keybinds.binds);
+
+  # All hyprland bind lines joined
+  hyprlandBinds = lib.concatStringsSep "\n" (map mkBindLine keybinds.binds);
 in
 {
   home.username = username;
@@ -365,50 +387,18 @@ in
       rounding = 6
     }
 
-    bind = SUPER, Return, exec, alacritty
-    bind = SUPER, W, killactive,
-    bind = SUPER SHIFT, W, exec, wlctl-launcher
-    bind = SUPER, M, exit,
-    bind = SUPER, E, exec, zeditor
-    bind = SUPER SHIFT, F, exec, thunar
-    bind = SUPER, V, togglefloating,
-    bind = SUPER, F, fullscreen,
-    bind = SUPER, Space, exec, walker
-    bind = SUPER SHIFT, Space, exec, waypaper --backend swww
-    bind = SUPER SHIFT, D, exec, qdirstat
-    bind = SUPER SHIFT, U, exec, claude-desktop
-    bind = SUPER SHIFT, B, exec, bluetuith-launcher
-    bind = SHIFT, Print, exec, screenshot screen
-    bind = SUPER, Print, exec, screenshot region
-
-    bind = SUPER, 1, workspace, 1
-    bind = SUPER, 2, workspace, 2
-    bind = SUPER, 3, workspace, 3
-    bind = SUPER, 4, workspace, 4
-    bind = SUPER, 5, workspace, 5
-
-    bind = SUPER SHIFT, 1, movetoworkspace, 1
-    bind = SUPER SHIFT, 2, movetoworkspace, 2
-    bind = SUPER SHIFT, 3, movetoworkspace, 3
-    bind = SUPER SHIFT, 4, movetoworkspace, 4
-    bind = SUPER SHIFT, 5, movetoworkspace, 5
-
-    bindel = , XF86MonBrightnessUp, exec, brightnessctl set +5%
-    bindel = , XF86MonBrightnessDown, exec, brightnessctl set 5%-
-
-    bindel = , XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+
-    bindel = , XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
-    bindl = , XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
-
-    bindm = SUPER, mouse:272, movewindow
-    bindm = SUPER, mouse:273, resizewindow
-
+    # ── Keybinds (generated from keybinds.nix) ──
+  '' + "\n" + hyprlandBinds + "\n" + ''
+    # ── Window rules ──
     windowrule = match:class ^(org.pulseaudio.pavucontrol)$, float on, center on, size 900 600
     windowrule = match:class ^(claude-desktop)$, float on, center on, size 60% 80%
     windowrule = match:class ^(waypaper)$, float on, center on, size 60% 70%
     windowrule = match:title ^(wlctl)$, float on, center on, size 900 550
     windowrule = match:title ^(bluetuith)$, float on, center on, size 900 550
   '';
+
+  # ── Keybind menu data (consumed by rofi keybinds.sh) ──
+  home.file.".config/rofi/keybinds.json".text = keybindsJSON;
 
   home.activation.removeStaleHyprlandLua = config.lib.dag.entryAfter ["writeBoundary"] ''
     rm -f $HOME/.config/hypr/hyprland.lua
@@ -502,5 +492,25 @@ in
     glib
     discord
     vesktop
+    rofi-wayland
+    jq
+    libnotify
+    (pkgs.writeShellScriptBin "keybinds-menu" ''
+      set -e
+      CONFIG="$HOME/.config/rofi/keybinds.json"
+
+      if [ ! -f "$CONFIG" ]; then
+        notify-send "Keybinds" "Menu data not found. Run nixos-rebuild switch first."
+        exit 1
+      fi
+
+      SELECTED=$(jq -r '.[] | "\(.description)  [\(.keys)]"' "$CONFIG" | rofi -dmenu -i -p "Keybinds" -l 20)
+
+      if [ -n "$SELECTED" ]; then
+        KEYS=$(echo "$SELECTED" | sed -n 's/.*\[\(.*\)\].*/\1/p')
+        echo -n "$KEYS" | wl-copy
+        notify-send "Keybinds" "Copied '${KEYS}' to clipboard"
+      fi
+    '')
   ];
 }
