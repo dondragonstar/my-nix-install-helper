@@ -225,6 +225,12 @@ in
   home.file.".local/share/omarchy/default/walker/themes/omarchy-default/style.css".source = ./walker-style.css;
   home.file.".local/share/omarchy/default/walker/themes/omarchy-default/layout.xml".source = ./walker-layout.xml;
 
+  # ── AI agent protocol distribution ──
+  # /etc/nixos/AGENTS.md is the single source; these symlinks make every
+  # agent tool find it. mkOutOfStoreSymlink → edits apply without rebuild.
+  home.file."AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "/etc/nixos/AGENTS.md";
+  home.file."GEMINI.md".source = config.lib.file.mkOutOfStoreSymlink "/etc/nixos/AGENTS.md";
+
   # Elephant config: use uwsm as launch prefix so apps get proper session activation
   xdg.configFile."elephant/elephant.toml".text = ''
     launch_prefix = "uwsm app --"
