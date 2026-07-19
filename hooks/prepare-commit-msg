@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Generates a commit message via local Ollama (gen-commit-msg.py) when
+# none was provided. Falls through silently if Ollama is unavailable.
+MSG_FILE="$1"
+SOURCE="${2:-}"
+
+# A message, merge, template, etc. was already provided — do nothing.
+[ -n "$SOURCE" ] && exit 0
+if grep -v '^#' "$MSG_FILE" 2>/dev/null | grep -q '[^[:space:]]'; then exit 0; fi
+
+DIFF=$(git diff --cached)
+[ -z "$DIFF" ] && exit 0
+
+TOPLEVEL=$(git rev-parse --show-toplevel)
+AI_MSG=$(printf '%s' "$DIFF" | python3 "$TOPLEVEL/gen-commit-msg.py" 2>/dev/null || true)
+[ -n "$AI_MSG" ] && printf '%s\n' "$AI_MSG" > "$MSG_FILE"
+exit 0

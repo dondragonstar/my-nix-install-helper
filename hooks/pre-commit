@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Protocol enforcement — see AGENTS.md. Bypassing with --no-verify
+# requires explicit user approval.
+set -euo pipefail
+
+fail() { printf 'pre-commit REJECTED: %s\n' "$*" >&2; exit 1; }
+
+STAGED=$(git diff --cached --name-only)
+
+# ── 1. Identity check (AGENTS.md §2) ──
+remote=$(git remote get-url origin 2>/dev/null || echo "")
+name=$(git config user.name 2>/dev/null || echo "")
+case "$remote" in
+  git@github-professional:*) expected="DevaJ2005" ;;
+  *)                         expected="dondragonstar" ;;
+esac
+[ "$name" = "$expected" ] || fail "git user.name is '$name', expected '$expected' for remote '$remote'.
+  Fix: git config user.name '$expected'"
+case "$name" in
+  *[Cc]laude*|*[Aa][Ii]*|*[Aa]gent*|*[Bb]ot*)
+    fail "AI-looking identity '$name' is forbidden (AGENTS.md golden rule)" ;;
+esac
+
+# ── 2. Changelog gate (AGENTS.md §1) ──
+if printf '%s\n' "$STAGED" | grep -q '\.nix$' \
+   && ! printf '%s\n' "$STAGED" | grep -qx 'CHANGELOG.md'; then
+  fail ".nix files staged without a CHANGELOG.md entry.
+  Add one line (what + why) to CHANGELOG.md and stage it."
+fi
+
+# ── 3. hardware-configuration.nix guard (AGENTS.md §3.2) ──
+if printf '%s\n' "$STAGED" | grep -qx 'hardware-configuration.nix' \
+   && [ "${ALLOW_HWCONFIG:-0}" != "1" ]; then
+  fail "hardware-configuration.nix must never be edited manually.
+  If nixos-generate-config legitimately regenerated it:
+  ALLOW_HWCONFIG=1 git commit ..."
+fi
+
+# ── 4. Nix syntax gate ──
+while IFS= read -r f; do
+  [ -n "$f" ] || continue
+  [ -f "$f" ] || continue          # deleted file — nothing to parse
+  nix-instantiate --parse "$f" >/dev/null 2>&1 \
+    || fail "nix syntax error in $f (run: nix-instantiate --parse $f)"
+done <<EOF
+$(printf '%s\n' "$STAGED" | grep '\.nix$' || true)
+EOF
+
+exit 0
