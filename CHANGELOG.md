@@ -3,6 +3,10 @@
 Newest first. Every commit that touches a `.nix` file MUST add an entry here
 (enforced by `hooks/pre-commit`). One line per change: what and why.
 
+## 2026-07-21
+- fix: add `hide_quick_activation = true` and `quick_activate = []` to Walker config to suppress F1-F4 top results
+- fix: clear Walker `quick_activate` default to stop F1-F4 appearing as search results
+
 ## 2026-07-19
 - feat: add `update` and `gcsize` shell aliases for flake upgrade + GC size estimate
 - refactor: /etc/nixos is now the git repo root; repo/ subdir and sync.sh copy loop retired (zero-drift: the live config IS the repo)

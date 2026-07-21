@@ -167,6 +167,10 @@ in
     theme = "omarchy-default"
     additional_theme_location = "~/.local/share/omarchy/default/walker/themes/"
     hide_action_hints = true
+    hide_quick_activation = true
+
+    [keybinds]
+    quick_activate = []
 
     [placeholders]
     "default" = { input = " Search...", list = "No Results" }
