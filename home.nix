@@ -455,6 +455,7 @@ in
     elephant
     ripgrep
     fd
+    brave
     btop
     qdirstat
     zed-editor
