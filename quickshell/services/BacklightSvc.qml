@@ -1,9 +1,6 @@
 import Quickshell.Io
 import QtQuick
 
-// Polls screen backlight brightness every 2 seconds from sysfs
-// (/sys/class/backlight/intel_backlight). Exposes pct as a plain int
-// property consumable by any widget in scope.
 QtObject {
     id: root
 
@@ -25,12 +22,10 @@ QtObject {
     }
 
     property Timer pollTimer: Timer {
-        interval: 2000
+        interval: 500
         running: true
         repeat: true
-        onTriggered: {
-            backlightProc.running = true;
-        }
+        onTriggered: backlightProc.running = true
         Component.onCompleted: triggered()
     }
 }

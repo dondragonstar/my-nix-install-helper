@@ -1,20 +1,20 @@
 import QtQuick
 
 QtObject {
-    readonly property color barBg: "#d9080808"
+    readonly property color barBg: "#e6020202"
     readonly property color text: "#e0e0e0"
-    readonly property color dimText: "#777777"
-    readonly property color itemBg: "#a6181818"
-    readonly property color itemText: "#999999"
-    readonly property color activeItemBg: "#cc333333"
+    readonly property color dimText: "#606060"
+    readonly property color itemBg: "#99101010"
+    readonly property color itemText: "#888888"
+    readonly property color activeItemBg: "#cc282828"
     readonly property color activeText: "#ffffff"
     readonly property color accent: "#8be9fd"
     readonly property color accentDim: "#5599bb"
     readonly property color warning: "#ffb86c"
     readonly property color critical: "#ff5555"
     readonly property color success: "#50fa7b"
-    readonly property color popupBg: "#ee0a0a0a"
-    readonly property color border: "#15ffffff"
+    readonly property color popupBg: "#f5040404"
+    readonly property color border: "#12ffffff"
 
     readonly property string font: "JetBrainsMono Nerd Font"
     readonly property int fontSize: 13

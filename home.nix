@@ -17,7 +17,7 @@
 
   options.my.barChoice = lib.mkOption {
     type = lib.types.enum [ "waybar" "quickshell" ];
-    default = "waybar";
+    default = "quickshell";
     description = "Which status bar autostarts.";
   };
 

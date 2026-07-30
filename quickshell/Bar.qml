@@ -46,26 +46,16 @@ PanelWindow {
             rightMargin: theme.spacing + 2
         }
 
-        Network { id: networkWidget }
-        Bluetooth { id: bluetoothWidget }
+        Network {}
+        Bluetooth {}
         Cpu { id: cpuWidget }
         Temperature {}
         Memory {}
         Backlight {}
-        Volume {}
+        Volume { id: volumeWidget }
         Battery {}
-        Tray { barWindow: bar }
+        Tray { barWindow: bar._backingWindow ? bar._backingWindow : bar }
         SysMenu { id: sysMenuWidget }
-    }
-
-    NetworkPopup {
-        id: netPopup
-        anchorItem: networkWidget
-    }
-
-    BluetoothPopup {
-        id: btPopup
-        anchorItem: bluetoothWidget
     }
 
     MediaPopup {
@@ -81,5 +71,10 @@ PanelWindow {
     CpuTooltip {
         id: cpuTooltip
         anchorItem: cpuWidget
+    }
+
+    AudioPopup {
+        id: audioPopup
+        anchorItem: volumeWidget
     }
 }

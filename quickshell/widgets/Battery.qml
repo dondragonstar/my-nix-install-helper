@@ -50,9 +50,37 @@ Pill {
         text: icon + " " + root.cap + "%"
         color: root.cap <= 15 ? theme.critical
              : root.cap <= 30 ? theme.warning
-             : root.charging ? "#8be9fd"
+             : root.charging ? theme.accent
              : theme.text
         font.family: theme.font
         font.pixelSize: theme.fontSize
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        hoverEnabled: true
+
+        Rectangle {
+            id: batTooltip
+            visible: parent.containsMouse
+            width: batTipText.implicitWidth + 16
+            height: batTipText.implicitHeight + 10
+            color: theme.popupBg
+            border.color: theme.border
+            border.width: 1
+            radius: 8
+            x: -width / 2 + parent.width / 2
+            y: parent.height + 6
+            z: 100
+
+            Text {
+                id: batTipText
+                anchors.centerIn: parent
+                text: root.status + " · " + root.cap + "%"
+                color: theme.text
+                font.family: theme.font
+                font.pixelSize: theme.fontSize - 2
+            }
+        }
     }
 }

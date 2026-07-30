@@ -17,11 +17,13 @@ QtObject {
     }
 
     function connect(targetSsid, pass) {
+        var escaped = targetSsid.replace(/'/g, "'\\''");
         var cmd;
         if (pass) {
-            cmd = ["nmcli", "dev", "wifi", "connect", targetSsid, "password", pass];
+            var escapedPass = pass.replace(/'/g, "'\\''");
+            cmd = ["sh", "-c", "nmcli dev wifi connect '" + escaped + "' password '" + escapedPass + "'"];
         } else {
-            cmd = ["nmcli", "dev", "wifi", "connect", targetSsid];
+            cmd = ["sh", "-c", "nmcli dev wifi connect '" + escaped + "'"];
         }
         connectProc.command = cmd;
         Qt.callLater(function() { connectProc.running = true; });

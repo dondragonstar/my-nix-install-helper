@@ -1,56 +1,35 @@
 import Quickshell.Io
 import QtQuick
 
-// Polls bluetooth state every 5 seconds via bluetoothctl. Exposes powered
-// state, whether a device is connected, and the connected device's name
-// as plain properties consumable by any widget in scope.
-//
-// Task 2.3 additions: interactive device list (scan/connect/disconnect/power
-// toggle) backing the BluetoothPopup. `devices` is populated by
-// `listDevices()`, which shells out to `bluetoothctl devices` (format
-// "Device XX:XX:XX:XX:XX:XX Name") and cross-references `bluetoothctl devices
-// Connected` to set the `connected` flag per device. `scan()` runs a timed
-// `bluetoothctl --timeout 8 scan on` and calls `listDevices()` once it exits.
-// `connectDevice()`/`disconnectDevice()`/`powerToggle()` are fire-and-forget
-// Process calls (no output parsing needed beyond letting the next
-// poll/listDevices pick up the new state).
 QtObject {
     id: root
 
     property bool powered: false
     property bool connected: false
     property string connectedName: ""
-
-    // Array of { mac: string, name: string, connected: bool }, populated by
-    // listDevices().
     property var devices: []
 
     function powerToggle() {
         root.powered = !root.powered;
         powerProc.command = ["bluetoothctl", "power", root.powered ? "on" : "off"];
-        powerProc.running = false;
-        powerProc.running = true;
+        Qt.callLater(function() { powerProc.running = true; });
     }
 
     function scan() {
-        scanProc.running = false;
         scanProc.running = true;
     }
 
     function connectDevice(mac) {
-        connectProc.command = ["bluetoothctl", "connect", mac];
-        connectProc.running = false;
-        connectProc.running = true;
+        connectProc.command = ["sh", "-c", "bluetoothctl connect " + mac + " && sleep 2 && bluetoothctl devices Connected"];
+        Qt.callLater(function() { connectProc.running = true; });
     }
 
     function disconnectDevice(mac) {
         disconnectProc.command = ["bluetoothctl", "disconnect", mac];
-        disconnectProc.running = false;
-        disconnectProc.running = true;
+        Qt.callLater(function() { disconnectProc.running = true; });
     }
 
     function listDevices() {
-        listProc.running = false;
         listProc.running = true;
     }
 
@@ -59,19 +38,13 @@ QtObject {
         stdout: SplitParser {
             onRead: data => {
                 var parts = data.trim().split("|");
-                var newPowered = parts[0] === "yes";
-                var newName = parts[1] || "";
-
-                root.powered = newPowered;
-                root.connectedName = newName;
-                root.connected = newName.length > 0;
+                root.powered = parts[0] === "yes";
+                root.connectedName = parts[1] || "";
+                root.connected = root.connectedName.length > 0;
             }
         }
     }
 
-    // Runs `bluetoothctl devices` then `bluetoothctl devices Connected`,
-    // separated by a marker line, so a single Process invocation can build
-    // the full devices array (mac, name, connected) in one shot.
     property Process listProc: Process {
         command: ["sh", "-c", "bluetoothctl devices; echo '---CONNECTED---'; bluetoothctl devices Connected"]
         property var allDevices: []
@@ -88,7 +61,6 @@ QtObject {
                     return;
                 }
 
-                // Expected format: "Device XX:XX:XX:XX:XX:XX DeviceName"
                 var m = line.match(/^Device\s+(\S+)\s+(.*)$/);
                 if (!m) return;
 
@@ -131,9 +103,7 @@ QtObject {
 
     property Process scanProc: Process {
         command: ["bluetoothctl", "--timeout", "8", "scan", "on"]
-        onExited: {
-            root.listDevices();
-        }
+        onExited: root.listDevices()
     }
 
     property Process connectProc: Process {
@@ -154,18 +124,14 @@ QtObject {
 
     property Process powerProc: Process {
         command: ["true"]
-        onExited: {
-            btProc.running = true;
-        }
+        onExited: btProc.running = true
     }
 
     property Timer pollTimer: Timer {
         interval: 5000
         running: true
         repeat: true
-        onTriggered: {
-            btProc.running = true;
-        }
+        onTriggered: btProc.running = true
         Component.onCompleted: triggered()
     }
 }
