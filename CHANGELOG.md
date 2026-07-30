@@ -4,6 +4,8 @@ Newest first. Every commit that touches a `.nix` file MUST add an entry here
 (enforced by `hooks/pre-commit`). One line per change: what and why.
 
 ## 2026-07-30
+- feat: storage module (modules/system/storage.nix) — NTFS (ntfs3/ntfs-3g) read-only, udisks2 + gvfs for click-to-mount drives and Android MTP phones (libmtp/jmtpfs); fixes phone-over-USB and Windows partitions not appearing in Thunar
+- feat: bin/rebuild script — nixos-rebuild switch then auto-commit (via Ollama gen-commit-msg.py) and git push; rebuild alias updated to point at the script
 - refactor: split home.nix into 7 focused modules under modules/home/ (hyprland, walker, waybar, theme, git, zsh, apps)
 - feat: waybar managed via systemd user service instead of hyprland exec-once (survives rebuilds)
 - revert: remove antigravity wrapper, use plain package
