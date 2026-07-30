@@ -23,14 +23,8 @@ if git diff --quiet; then
   exit 0
 fi
 
-info "Staging changes ..."
-git add -u
-
-UNTRACKED=$(git ls-files --others --exclude-standard)
-if [ -n "$UNTRACKED" ]; then
-  info "Untracked files present (not auto-staged):"
-  printf '  %s\n' $UNTRACKED
-fi
+info "Staging changes (tracked + untracked) ..."
+git add -A
 
 info "Generating commit message ..."
 DIFF=$(git diff --cached)
