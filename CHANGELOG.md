@@ -6,6 +6,7 @@ Newest first. Every commit that touches a `.nix` file MUST add an entry here
 ## 2026-07-30
 - refactor: split home.nix into 7 focused modules under modules/home/ (hyprland, walker, waybar, theme, git, zsh, apps)
 - feat: waybar managed via systemd user service instead of hyprland exec-once (survives rebuilds)
+- revert: remove antigravity wrapper, use plain package
 - feat: auto garbage collection (weekly, 7d retention) and nix store optimisation via systemd timers
 - feat: nix-community cachix substituter for faster binary cache hits
 - feat: new shell aliases — gc (garbage collect), bootbuild (safe rebuild on next boot), check (flake check)

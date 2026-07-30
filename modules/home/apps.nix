@@ -64,10 +64,7 @@
     qdirstat
     zed-editor
     alacritty
-    (pkgs.writeShellScriptBin "antigravity" ''
-      unset NIXOS_OZONE_WL
-      exec ${pkgs.antigravity}/bin/antigravity --no-sandbox "$@"
-    '')
+    antigravity
     claude-code
     starship
     zoxide
