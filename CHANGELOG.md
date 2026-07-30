@@ -4,6 +4,7 @@ Newest first. Every commit that touches a `.nix` file MUST add an entry here
 (enforced by `hooks/pre-commit`). One line per change: what and why.
 
 - home.nix: switch default bar from waybar to quickshell
+- hyprland.nix: add exec-once to start graphical-session.target (fixes quickshell not starting — SDDM launches Hyprland directly without activating the target)
 
 ## 2026-07-30
 - feat: udev rule in storage.nix to expose internal NTFS partitions in file-manager sidebars (UDISKS_SYSTEM=0)
