@@ -1,0 +1,148 @@
+{ config, pkgs, lib, username, wlctl, ... }:
+
+{
+  # ── Vesktop: forced flags for screen sharing ──
+  xdg.desktopEntries."vesktop" = {
+    name = "Vesktop";
+    exec = "vesktop --ozone-platform-hint=auto --enable-features=WebRTCPipeWireCapturer --disable-gpu-sandbox %U";
+    icon = "vesktop";
+    type = "Application";
+    categories = [ "Network" "InstantMessaging" "Chat" ];
+    mimeType = [ "x-scheme-handler/discord" ];
+    settings.StartupWMClass = "Vesktop";
+  };
+
+  # ── Claude Desktop entry ──
+  xdg.desktopEntries."claude-desktop" = {
+    name = "Claude";
+    comment = "Desktop application for Claude.ai";
+    genericName = "AI Assistant";
+    categories = [ "Utility" "Development" ];
+    exec = "claude-desktop %u";
+    icon = "claude-desktop";
+    type = "Application";
+    mimeType = [ "x-scheme-handler/claude" ];
+    startupNotify = true;
+    settings.StartupWMClass = "claude-desktop";
+    settings.SingleMainWindow = "true";
+    actions.NewChat = {
+      name = "New chat";
+      exec = "claude-desktop claude://claude.ai/new";
+    };
+    actions.NewCode = {
+      name = "New Claude Code session";
+      exec = "claude-desktop claude://code/new";
+    };
+  };
+
+  # ── Nixup desktop entry ──
+  xdg.desktopEntries."nixup" = {
+    name = "Nixup";
+    comment = "Selective flake input updater";
+    exec = "nixup";
+    icon = "software-update-urgent";
+    type = "Application";
+    categories = [ "System" "Utility" ];
+    settings.StartupWMClass = "nixup";
+  };
+
+  home.packages = with pkgs; [
+    # ── Claude Desktop wrapper ──
+    (pkgs.writeShellScriptBin "claude-desktop" ''
+      # Clean up stale IPC socket from previous runs (Electron apps leave this behind
+      # when quit from tray, which blocks the next launch)
+      rm -f "/run/user/$(id -u)/claude-desktop-qe.sock"
+      exec ${pkgs.appimage-run}/bin/appimage-run /home/${username}/Claude_Desktop-1.18286.0-x86_64.AppImage "$@"
+    '')
+    walker
+    uwsm
+    elephant
+    ripgrep
+    fd
+    brave
+    btop
+    qdirstat
+    zed-editor
+    alacritty
+    (pkgs.writeShellScriptBin "antigravity" ''
+      unset NIXOS_OZONE_WL
+      exec ${pkgs.antigravity}/bin/antigravity --no-sandbox "$@"
+    '')
+    claude-code
+    starship
+    zoxide
+    fzf
+    bat
+    eza
+    brightnessctl
+    playerctl
+    thunar
+    tumbler
+    gvfs
+    pavucontrol
+    (pkgs.writeShellScriptBin "bluetuith-launcher" ''
+      exec alacritty --title bluetuith -e bluetuith "$@"
+    '')
+    blueman
+    bluetuith
+    wlctl.packages.${pkgs.stdenv.hostPlatform.system}.default
+    awww
+    waypaper
+    (pkgs.writeShellScriptBin "swww" "exec ${pkgs.awww}/bin/awww \"$@\"")
+    (pkgs.writeShellScriptBin "swww-daemon" "exec ${pkgs.awww}/bin/awww-daemon \"$@\"")
+    (pkgs.writeShellScriptBin "screenshot" ''
+      dir="$HOME/Pictures/Screenshots"
+      mkdir -p "$dir"
+      app=$(hyprctl activewindow | grep -oP '^[[:blank:]]*title: \K.*' | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '_' | sed 's/_*$//')
+      [ -z "$app" ] && app=$(hyprctl activewindow | grep -oP '^[[:blank:]]*class: \K.*' | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '_' | sed 's/_*$//')
+      [ -z "$app" ] && app="unknown"
+      ts=$(date +%H_%M_%d_%m_%y)
+      case "''${1:-screen}" in
+        region) grim -g "$(slurp)" "$dir/''${app}_''${ts}.png" ;;
+        screen) grim "$dir/''${app}_''${ts}.png" ;;
+      esac
+    '')
+    (pkgs.writeShellScriptBin "wlctl-launcher" ''
+      exec alacritty --title wlctl -e wlctl "$@"
+    '')
+    grim
+    slurp
+    wl-clipboard
+    wget
+    opencode
+    gcc
+    gnumake
+    binutils
+    nasm
+    bochs
+    grub2
+    xorriso
+    seabios
+    rustc
+    cargo
+    rustfmt
+    clippy
+    rust-analyzer
+    nodejs
+    pnpm
+    python3
+    nix-output-monitor
+    telegram-desktop
+    vlc
+    qimgv
+    zathura
+    papirus-icon-theme
+    catppuccin-gtk
+    lxappearance
+    ffmpegthumbnailer
+    poppler
+    glib
+    discord
+    vesktop
+    jq
+    libnotify
+    (pkgs.writeShellScriptBin "nixup" ''
+      exec ${pkgs.python3}/bin/python3 /etc/nixos/bin/nixup "$@"
+    '')
+  ];
+}

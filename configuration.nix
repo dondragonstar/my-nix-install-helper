@@ -32,12 +32,24 @@
     extra-substituters = [
       "https://walker.cachix.org"
       "https://walker-git.cachix.org"
+      "https://nix-community.cachix.org"
     ];
     extra-trusted-public-keys = [
       "walker.cachix.org-1:fG8q+uAaMqhsMxWjwvk0IMb4mFPFLqHjuvfwQxE4oJM="
       "walker-git.cachix.org-1:vmC0ocfPWh0S/vRAQGtChuiZBTAe4wiKDeyyXM0/7pM="
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
     ];
   };
+
+  # Automatic garbage collection (weekly, keep 7 days) + store dedup.
+  # Runs as systemd timers; zero manual maintenance.
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 7d";
+  };
+  nix.optimise.automatic = true;
+
   nixpkgs.config.allowUnfree = true;
 
   ##############################################################
@@ -137,15 +149,15 @@
   ##############################################################
   ## System packages
   ##############################################################
+  # NOTE: firefox is provided by programs.firefox.enable; ollama by
+  # services.ollama.enable — neither is listed here to avoid duplication.
   environment.systemPackages = with pkgs; [
     git
     vim
     wget
     curl
     waybar
-    firefox
     pciutils
-    ollama
     gnome-keyring
     sqlite
     appimage-run
