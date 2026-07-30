@@ -59,5 +59,7 @@
 
     # ── Keybind Menu (opens Walker in keybinds-only mode) ──
     { mods = "SUPER"; key = "H";            action = "exec, walker -s keybinds";   description = "Search keybinds in Walker";      category = "Keybinds"; }
+    # ── Nixup (update selector) ──
+    { mods = "SUPER"; key = "U";            action = "exec, alacritty --title nixup -e python3 /etc/nixos/bin/nixup";  description = "Open update selector (nixup)";   category = "System"; }
   ];
 }

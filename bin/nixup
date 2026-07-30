@@ -1,0 +1,428 @@
+#!/usr/bin/env python3
+"""nixup - Selective flake input updater with Catppuccin Mocha TUI."""
+
+import curses, json, os, subprocess, sys, threading, time
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Optional
+
+C = {
+    "bg": 0x1e1e2e, "surface": 0x313244,
+    "text": 0xcdd6f4, "subtext0": 0xa6adc8,
+    "blue": 0x89b4fa, "green": 0xa6e3a1,
+    "red": 0xf38ba8, "yellow": 0xf9e2af,
+    "mantle": 0x181825, "overlay0": 0x6c7086,
+    "lavender": 0xb4befe, "peach": 0xfab387,
+}
+
+FLAKE_DIR = "/etc/nixos"
+HOSTNAME = "hydragon2000-pc"
+
+@dataclass
+class Package:
+    name: str; input_name: str
+    ver_old: str | None = None; ver_new: str | None = None
+    changed: bool = False; ver_checked: bool = False
+
+@dataclass
+class FlakeInput:
+    name: str; owner: str; repo: str; ref: str
+    locked_rev: str; locked_date: int
+    packages: list = field(default_factory=list)
+    latest_rev: str | None = None
+    has_update: bool = False; up_to_date: bool = False
+    error: str | None = None
+    version_checking: bool = False; version_checked: bool = False
+
+def parse_flake_lock(path: str) -> list[FlakeInput]:
+    data = json.loads((Path(path) / "flake.lock").read_text())
+    root_inputs = data["nodes"]["root"]["inputs"]
+    res = []
+    for name, nk in root_inputs.items():
+        n = data["nodes"].get(nk, {})
+        o, l = n.get("original", {}), n.get("locked", {})
+        if not o or not l: continue
+        res.append(FlakeInput(name=name, owner=l.get("owner",""), repo=l.get("repo",""),
+                              ref=o.get("ref",""), locked_rev=l.get("rev",""),
+                              locked_date=l.get("lastModified",0)))
+    return res
+
+def extract_packages(home_nix: str) -> list[str]:
+    import re
+    text = Path(home_nix).read_text()
+    pkgs, ins, depth = [], False, 0
+    for line in text.splitlines():
+        if "home.packages" in line and "with pkgs;" in line:
+            ins = True; depth += line.count("[") - line.count("]"); continue
+        if not ins: continue
+        s = line.strip()
+        if not s or s.startswith("#"): continue
+        depth += s.count("[") - s.count("]")
+        if s == "];" and depth <= 0: break
+        if s.startswith("(") and "writeShellScriptBin" in s:
+            m = re.search(r'writeShellScriptBin\s+"([^"]+)"', s)
+            if m: pkgs.append(m.group(1))
+            continue
+        if "wlctl.packages" in s:
+            pkgs.append("wlctl")
+            continue
+        if s.startswith("(") or s.startswith("["): continue
+        ident = s.rstrip(",").strip()
+        if ident and re.match(r'^[a-zA-Z][a-zA-Z0-9_\-]*$', ident) and ident not in ("esac","then","fi","done","in","do"): pkgs.append(ident)
+    return sorted(set(pkgs))
+
+def resolve_input(name: str) -> str:
+    return "wlctl" if name == "wlctl" else "nixpkgs"
+
+def check_rev(inp: FlakeInput):
+    try:
+        r = subprocess.run(["git","ls-remote",f"https://github.com/{inp.owner}/{inp.repo}",inp.ref],
+                          capture_output=True, text=True, timeout=15)
+        if r.returncode == 0 and r.stdout.strip():
+            rev = r.stdout.strip().split()[0]
+            inp.latest_rev = rev
+            inp.has_update = rev != inp.locked_rev
+            inp.up_to_date = not inp.has_update
+        else: inp.error = "no output"
+    except Exception as e: inp.error = str(e)
+
+def check_pkg_vers(inp: FlakeInput):
+    if inp.name != "nixpkgs" or not inp.has_update or not inp.latest_rev:
+        inp.version_checked = True; return
+    names = [p.name for p in inp.packages]
+    if not names: inp.version_checked = True; return
+    inp.version_checking = True
+    old_ref = f"github:{inp.owner}/{inp.repo}/{inp.ref}"
+    new_ref = f"github:{inp.owner}/{inp.repo}/{inp.latest_rev}"
+
+    def eval_ver(pkg, ref):
+        try:
+            r = subprocess.run(["nix","eval","--json",f"{ref}#{pkg}.version"],
+                              capture_output=True, text=True, timeout=60)
+            return json.loads(r.stdout.strip()) if r.returncode == 0 and r.stdout.strip() else None
+        except: return None
+
+    def run_batch(ref):
+        lock, results = threading.Lock(), {}
+        def f(p):
+            v = eval_ver(p, ref)
+            with lock: results[p] = v
+        threads = [threading.Thread(target=f, args=(p,)) for p in names]
+        for t in threads: t.start()
+        for t in threads: t.join(timeout=90)
+        return results
+
+    old_vers, new_vers = run_batch(old_ref), run_batch(new_ref)
+    for p in inp.packages:
+        p.ver_old = old_vers.get(p.name)
+        p.ver_new = new_vers.get(p.name)
+        p.changed = old_vers.get(p.name) != new_vers.get(p.name)
+        p.ver_checked = True
+    inp.version_checking = False; inp.version_checked = True
+
+FG = curses.COLOR_WHITE
+BG = -1
+
+def init_cp():
+    pairs = {
+        "normal": 1, "update": 2, "subtext": 3, "accent": 4,
+        "error": 5, "checking": 6, "sel": 7, "sel_up": 8,
+        "muted": 9, "header": 10, "changed": 11, "title": 12,
+    }
+    for name, num in pairs.items():
+        try:
+            if name == "normal":     curses.init_pair(num, FG, BG)
+            elif name == "update":   curses.init_pair(num, curses.COLOR_GREEN, BG)
+            elif name == "subtext":  curses.init_pair(num, curses.COLOR_WHITE, BG)
+            elif name == "accent":   curses.init_pair(num, curses.COLOR_CYAN, BG)
+            elif name == "error":    curses.init_pair(num, curses.COLOR_RED, BG)
+            elif name == "checking": curses.init_pair(num, curses.COLOR_YELLOW, BG)
+            elif name == "sel":      curses.init_pair(num, FG, curses.COLOR_BLACK)
+            elif name == "sel_up":   curses.init_pair(num, curses.COLOR_GREEN, curses.COLOR_BLACK)
+            elif name == "muted":    curses.init_pair(num, curses.COLOR_WHITE, BG)
+            elif name == "header":   curses.init_pair(num, curses.COLOR_CYAN, BG)
+            elif name == "changed":  curses.init_pair(num, curses.COLOR_MAGENTA, BG)
+            elif name == "title":    curses.init_pair(num, FG, curses.COLOR_BLACK)
+            else:                    curses.init_pair(num, FG, BG)
+        except:
+            curses.init_pair(num, curses.COLOR_WHITE, curses.COLOR_BLACK)
+    return pairs
+
+def cadd(win, y, x, text, cp, bold=False):
+    a = curses.color_pair(cp)
+    if bold: a |= curses.A_BOLD
+    try: win.addstr(y, x, text, a)
+    except: pass
+
+class TUI:
+    def __init__(self, std, inputs: list[FlakeInput]):
+        self.std = std; self.inputs = inputs
+        self.sel_inp: set[str] = set(); self.sel_pkg: set[str] = set()
+        self.cursor = 0; self.expanded: set[str] = set()
+        self.filter = ""; self.f_active = False
+        self.status = ""; self.status_err = False
+        self.running = True
+        self.cp = init_cp(); self.rows: list = []
+        self._rebuild_rows()
+
+    def _rebuild_rows(self):
+        self.rows = []
+        for inp in self.inputs:
+            self.rows.append(("inp", inp.name, inp))
+            if inp.name in self.expanded:
+                if inp.packages:
+                    for p in inp.packages: self.rows.append(("pkg", inp.name, p))
+                else: self.rows.append(("pkg", inp.name, None))
+
+    def draw(self):
+        try:
+            self._draw_inner()
+        except:
+            pass
+        curses.doupdate()
+
+    def _draw_inner(self):
+        std = self.std; std.clear()
+        max_y, max_x = std.getmaxyx()
+        if max_y < 8 or max_x < 50:
+            try: std.addstr(0,0,"Terminal too small")
+            except: pass
+            std.refresh(); return
+
+        hl = curses.A_REVERSE
+        try:
+            std.attron(curses.color_pair(self.cp["title"]) | hl)
+            std.addstr(0,0," "*max_x)
+            std.addstr(0,1," nixup - Update Selector ")
+            std.addstr(0,max_x-14," /etc/nixos ")
+            std.attroff(curses.color_pair(self.cp["title"]) | hl)
+        except: pass
+
+        if self.f_active:
+            cadd(std,1,0," Filter: ",self.cp["accent"],True)
+            cadd(std,1,9,self.filter+(" "*(max_x-12-len(self.filter))),self.cp["normal"])
+        else:
+            cadd(std,1,1,"/ to search",self.cp["subtext"])
+
+        upd = sum(1 for i in self.inputs if i.has_update)
+        sel = len(self.sel_inp)
+        cadd(std,1,max_x-22,f"{upd} updatable | {sel} selected ",self.cp["subtext"])
+
+        filtered = []
+        for rt,nm,data in self.rows:
+            if self.filter:
+                label = nm if rt=="inp" else (data.name if data else "")
+                if self.filter.lower() not in label.lower(): continue
+            filtered.append((rt,nm,data))
+
+        if self.cursor >= len(filtered): self.cursor = max(0,len(filtered)-1)
+
+        top = 3; ht = max_y - top - 2
+        scroll = max(0, self.cursor - ht + 1)
+        shown = 0
+        for i,(rt,nm,data) in enumerate(filtered):
+            if i < scroll or shown >= ht: shown += 1; continue
+            y = top + shown
+            is_cur = i == self.cursor
+            inp = next(x for x in self.inputs if x.name == nm)
+            if not inp: shown += 1; continue
+            is_sel = inp.name in self.sel_inp
+            if rt == "inp": self._draw_inp(std,y,max_x,inp,is_sel,is_cur)
+            elif rt == "pkg": self._draw_pkg(std,y,max_x,inp,data,is_sel,is_cur)
+            shown += 1
+
+        if not filtered:
+            cadd(std,top,2," No items match filter ",self.cp["muted"])
+
+        fy = max_y - 1
+        std.attron(curses.color_pair(self.cp["title"]) | curses.A_REVERSE)
+        std.addstr(fy,0," "*max_x)
+        std.addstr(fy,1," arrow nav | Space toggle | Enter apply | q quit | / search | a select all ")
+        std.attroff(curses.color_pair(self.cp["title"]) | curses.A_REVERSE)
+
+        if self.status:
+            sy = max_y - 2
+            cp = self.cp["error"] if self.status_err else self.cp["accent"]
+            std.attron(curses.color_pair(cp) | (curses.A_REVERSE if self.status_err else 0))
+            std.addstr(sy,0," "*max_x)
+            std.addstr(sy,1,f" {self.status}")
+            std.attroff(curses.color_pair(cp) | (curses.A_REVERSE if self.status_err else 0))
+
+        std.noutrefresh()
+
+    def _draw_inp(self,std,y,max_x,inp,sel,is_cur):
+        cb = "[x]" if sel else "[ ]"
+        if is_cur:
+            cp = self.cp["sel_up"] if inp.has_update else self.cp["sel"]
+            std.addstr(y,0," "*(max_x-1),curses.color_pair(cp))
+        elif inp.has_update: cp = self.cp["update"]
+        else: cp = self.cp["normal"]
+
+        exp = "v" if inp.name in self.expanded else "+"
+        if inp.packages: cadd(std,y,0,f"{exp} ",self.cp["subtext"])
+
+        status = ""; s_cp = self.cp["subtext"]
+        if inp.error: status = f" [{inp.error}]"; s_cp = self.cp["error"]
+        elif inp.up_to_date: status = " (up to date)"; s_cp = self.cp["muted"]
+        elif inp.has_update:
+            lr = inp.latest_rev[:7] if inp.latest_rev else "?"
+            cr = inp.locked_rev[:7] if inp.locked_rev else "?"
+            status = f" {cr}..{lr}"; s_cp = self.cp["update"]
+        elif inp.version_checking: status = " (checking...)"; s_cp = self.cp["checking"]
+
+        cnt = f" [{len(inp.packages)} pkgs]" if inp.packages else ""
+        cadd(std,y,0,f" {cb} {inp.name}{cnt}",cp,inp.has_update)
+        cadd(std,y,len(f" {cb} {inp.name}{cnt}"),status,s_cp)
+
+    def _draw_pkg(self,std,y,max_x,inp,pkg,sel,is_cur):
+        if pkg is None: cadd(std,y,4," (no packages)",self.cp["muted"]); return
+        if is_cur: std.addstr(y,0," "*(max_x-1),curses.color_pair(self.cp["sel"]))
+        cb = "[x]" if (pkg.name in self.sel_pkg or sel) else "[ ]"
+        line = f"    {cb} {pkg.name}"
+        if not inp.has_update and not pkg.changed:
+            cadd(std,y,0,line+" (up to date)",self.cp["muted"]); return
+        if pkg.ver_checked and pkg.changed:
+            ov = pkg.ver_old or "?"; nv = pkg.ver_new or "?"
+            cadd(std,y,0,line,self.cp["changed"]); cadd(std,y,len(line),f" {ov}->{nv}",self.cp["update"])
+        elif not pkg.ver_checked:
+            cadd(std,y,0,line,self.cp["subtext"]); cadd(std,y,len(line)," (checking...)",self.cp["checking"])
+        elif inp.has_update:
+            cadd(std,y,0,line,self.cp["subtext"]); cadd(std,y,len(line)," (will update)",self.cp["muted"])
+
+    def handle(self, key):
+        ENTER = (10, 13, curses.KEY_ENTER)
+        if self.f_active:
+            if key == 27:
+                self.f_active = False; self.filter = ""; return
+            if key in (10, 13, curses.KEY_ENTER):
+                self.f_active = False
+                # fall through to normal mode handling
+            elif key in (curses.KEY_BACKSPACE,127,263): self.filter = self.filter[:-1]; return
+            elif 32 <= key < 127: self.filter += chr(key); return
+            else: return
+        if key == ord("q"): self.running = False
+        elif key == ord("/"): self.f_active = True; self.filter = ""
+        elif key == ord("a"): self._toggle_all()
+        elif key == 32: self._toggle()
+        elif key == curses.KEY_UP: self.cursor = max(0,self.cursor-1)
+        elif key == curses.KEY_DOWN: self.cursor = min(len(self.rows)-1,self.cursor+1)
+        elif key in (10, 13, curses.KEY_ENTER): self._apply()
+        elif key == curses.KEY_RESIZE: pass
+
+    def _toggle_all(self):
+        all_up = [i.name for i in self.inputs if i.has_update]
+        if self.sel_inp == set(all_up): self.sel_inp.clear(); self.sel_pkg.clear()
+        else: self.sel_inp = set(all_up)
+
+    def _toggle(self):
+        if self.cursor >= len(self.rows): return
+        rt,nm,data = self.rows[self.cursor]
+        if rt == "inp":
+            if nm in self.sel_inp: self.sel_inp.discard(nm)
+            else:
+                self.sel_inp.add(nm); inp = next(x for x in self.inputs if x.name==nm)
+                for p in inp.packages: self.sel_pkg.add(p.name)
+        elif rt == "pkg" and data:
+            inp = next(x for x in self.inputs if x.name==nm)
+            if data.name in self.sel_pkg:
+                self.sel_pkg.discard(data.name)
+                if not any(p.name in self.sel_pkg for p in inp.packages): self.sel_inp.discard(nm)
+            else: self.sel_pkg.add(data.name); self.sel_inp.add(nm)
+
+    def _apply(self):
+        if not self.sel_inp:
+            self.status = "No inputs selected"; self.status_err = True; return
+        self.status = "Updating..."; self.status_err = False
+        threading.Thread(target=self._do_update, daemon=True).start()
+
+    def _do_update(self):
+        ok = []
+        failed = []
+        try:
+            for nm in list(self.sel_inp):
+                r = subprocess.run(
+                    ["nix","flake","lock","--update-input",nm],
+                    cwd=FLAKE_DIR, capture_output=True, text=True, timeout=120,
+                )
+                if r.returncode == 0: ok.append(nm)
+                else: failed.append(nm)
+        except subprocess.TimeoutExpired:
+            self.status = "Timeout updating locks"; self.status_err = True; return
+        except Exception as e:
+            self.status = f"Error: {e}"; self.status_err = True; return
+
+        if ok:
+            self.sel_inp.clear(); self.sel_pkg.clear()
+            names = ", ".join(ok)
+            self.status = f"Updated: {names}"
+            self.status_err = False
+            self._notify(f"Locks updated: {names}\nRun: drybuild && rebuild")
+        if failed:
+            self.status = f"Failed: {', '.join(failed)}"
+            self.status_err = True
+
+    def _notify(self, msg: str):
+        try:
+            subprocess.run(
+                ["notify-send", "--icon=software-update-urgent",
+                 "--app-name=nixup", "nixup", msg],
+                timeout=5,
+            )
+        except: pass
+
+def main(std):
+    global HOSTNAME
+    mn = Path(FLAKE_DIR)/"machine.nix"
+    if mn.exists():
+        for line in mn.read_text().splitlines():
+            if "hostname" in line and "=" in line:
+                ps = line.split("=")
+                if len(ps)>=2: HOSTNAME = ps[1].strip().strip(";").strip('"'); break
+
+    curses.start_color()
+    curses.use_default_colors()
+    curses.curs_set(0)
+    std.timeout(200)
+
+    try: cp_lookup = init_cp()
+    except: cp_lookup = dict.fromkeys(["normal","update","subtext","accent","error","checking","sel","sel_up","muted","header","changed","title"], 1)
+
+    inputs = parse_flake_lock(FLAKE_DIR)
+    pkg_names = extract_packages(str(Path(FLAKE_DIR)/"home.nix"))
+    for inp in inputs:
+        pkg_list = [Package(name=n, input_name=inp.name) for n in pkg_names if resolve_input(n)==inp.name]
+        inp.packages = sorted(pkg_list, key=lambda p: p.name)
+
+    app = TUI(std, inputs)
+    app.cp = cp_lookup
+    app.status = "Checking for updates..."
+    app.status_err = False
+
+    for inp in inputs:
+        t = threading.Thread(target=check_rev, args=(inp,), daemon=True)
+        t.start()
+
+    for inp in inputs:
+        if inp.name == "nixpkgs":
+            t = threading.Thread(target=check_pkg_vers, args=(inp,), daemon=True)
+            t.start()
+
+    while app.running:
+        any_checking = any(i.version_checking for i in inputs)
+        any_errors = any(i.error and not i.has_update for i in inputs)
+
+        if not any_checking and not any_errors and any(i.has_update or i.up_to_date for i in inputs):
+            if app.status == "Checking for updates...":
+                app.status = ""
+
+        app._rebuild_rows(); app.draw(); curses.doupdate()
+        try: app.handle(std.getch())
+        except: pass
+
+    # Clear status once all checks done at exit
+    pass
+
+if __name__ == "__main__":
+    try: curses.wrapper(main)
+    except KeyboardInterrupt: print(); sys.exit(0)
+    except Exception as e: print(f"Error: {e}"); sys.exit(1)
