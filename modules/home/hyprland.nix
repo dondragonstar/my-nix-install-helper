@@ -42,9 +42,10 @@ in
     # Import Wayland display into systemd user manager so services inherit it
     exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
 
-    # Start the systemd graphical session target so services like quickshell
-    # and elephant (which depend on graphical-session.target) are pulled in.
-    exec-once = systemctl --user start graphical-session.target
+    # Start the quickshell status bar (via systemd so it survives rebuilds).
+    # NOTE: graphical-session.target cannot be started manually (RefuseManualStart),
+    # so we start quickshell directly instead of relying on target pull-in.
+    exec-once = systemctl --user start quickshell
 
     # Walker daemon (delayed for elephant + Wayland readiness)
     # We use a small helper that ensures elephant is running before launching walker
