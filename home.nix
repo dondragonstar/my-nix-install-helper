@@ -8,28 +8,33 @@
     ./modules/home/hyprland.nix
     ./modules/home/walker.nix
     ./modules/home/waybar.nix
+    ./modules/home/quickshell.nix
     ./modules/home/theme.nix
     ./modules/home/git.nix
     ./modules/home/zsh.nix
     ./modules/home/apps.nix
   ];
 
-  home.username = username;
-  home.homeDirectory = "/home/${username}";
-  home.stateVersion = "26.05";
-
-  # ── Environment variables ──
-  home.sessionVariables = {
-    QT_QPA_PLATFORMTHEME = "gtk3";
-    NIXOS_OZONE_WL = "1";
-    ELECTRON_OZONE_PLATFORM_HINT = "auto";
-    # Force pipewire screen sharing for Electron apps
-    XDG_SCREENSHOTS_DIR = "$HOME/Pictures/Screenshots";
+  options.my.barChoice = lib.mkOption {
+    type = lib.types.enum [ "waybar" "quickshell" ];
+    default = "waybar";
+    description = "Which status bar autostarts.";
   };
 
-  # ── User binary PATH (RTK and other manually installed tools) ──
-  home.sessionPath = [ "$HOME/.local/bin" ];
+  config = {
+    home.username = username;
+    home.homeDirectory = "/home/${username}";
+    home.stateVersion = "26.05";
 
-  # Let Home Manager manage itself.
-  programs.home-manager.enable = true;
+    home.sessionVariables = {
+      QT_QPA_PLATFORMTHEME = "gtk3";
+      NIXOS_OZONE_WL = "1";
+      ELECTRON_OZONE_PLATFORM_HINT = "auto";
+      XDG_SCREENSHOTS_DIR = "$HOME/Pictures/Screenshots";
+    };
+
+    home.sessionPath = [ "$HOME/.local/bin" ];
+
+    programs.home-manager.enable = true;
+  };
 }

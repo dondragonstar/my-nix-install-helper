@@ -70,7 +70,11 @@ in
       Restart = "on-failure";
       RestartSec = 2;
     };
-    Install = {
+    # Only autostart waybar when it's the chosen bar. When quickshell is
+    # chosen, this service still exists (so `systemctl --user start waybar`
+    # works for manual testing) but won't be pulled in by the graphical
+    # session target.
+    Install = lib.mkIf (config.my.barChoice == "waybar") {
       WantedBy = [ "graphical-session.target" ];
     };
   };

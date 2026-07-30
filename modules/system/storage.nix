@@ -14,6 +14,13 @@
   services.udisks2.enable = true;
   services.gvfs.enable = true;
 
+  # ── Show internal NTFS partitions in file-manager sidebars ──
+  # Without this, udisks2 treats internal NTFS drives as "system" and hides
+  # them from Thunar/Nautilus Devices. The udev env override exposes them.
+  services.udev.extraRules = ''
+    SUBSYSTEM=="block", ENV{ID_FS_TYPE}=="ntfs", ENV{UDISKS_SYSTEM}="0", ENV{UDISKS_IGNORE}="0"
+  '';
+
   # ── Force NTFS mounts read-only ──
   # udisks2 mounts NTFS read-write by default. Forcing ro removes any risk of
   # corrupting a Windows partition left in a Fast-Startup / hibernation state.
