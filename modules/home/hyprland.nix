@@ -56,6 +56,9 @@ in
     env = XCURSOR_THEME,Bibata-Modern-Classic
     env = XCURSOR_SIZE,24
     env = HYPRCURSOR_SIZE,24
+    # Force Firefox to XWayland: native-Wayland popups (menus, suggestions)
+    # collapse to 10px slivers in FF 153 — GTK layout bug, compositor-agnostic
+    env = MOZ_ENABLE_WAYLAND,0
 
     input {
       kb_layout = us

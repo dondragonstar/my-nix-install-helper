@@ -3,7 +3,7 @@
 Newest first. Every commit that touches a `.nix` file MUST add an entry here
 (enforced by `hooks/pre-commit`). One line per change: what and why.
 
-- home.nix: force MOZ_ENABLE_WAYLAND=0 — Firefox 153 native-Wayland popups collapse to 10px slivers (GTK layout bug, repro'd on fresh profile; XWayland renders correctly)
+- home.nix, hyprland.nix: force MOZ_ENABLE_WAYLAND=0 (session vars + Hyprland env) — Firefox 153 native-Wayland popups collapse to 10px slivers (GTK layout bug, repro'd on fresh profile; XWayland renders correctly)
 - hyprland.nix: import HYPRLAND_INSTANCE_SIGNATURE into systemd user manager — fixes quickshell workspace highlights (quickshell had no IPC socket env, logged "$HYPRLAND_INSTANCE_SIGNATURE is unset")
 - flake.nix, configuration.nix: pin Hyprland to v0.56.1 input and override package+xdph — fixes Firefox popup sliver bug (hyprwm/Hyprland#14936, missing from nixpkgs 26.05's 0.55.4)
 - home.nix: switch default bar from waybar to quickshell
