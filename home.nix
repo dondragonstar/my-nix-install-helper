@@ -30,6 +30,11 @@
       QT_QPA_PLATFORMTHEME = "gtk3";
       NIXOS_OZONE_WL = "1";
       ELECTRON_OZONE_PLATFORM_HINT = "auto";
+      # Firefox 153 native-Wayland popups (hamburger menu, search suggestions,
+      # toolbar menus) collapse to 10px slivers with no text — Firefox GTK
+      # layout bug, compositor/profile-independent (repro'd on fresh profile,
+      # XWayland renders correctly). Force XWayland until upstream fixes it.
+      MOZ_ENABLE_WAYLAND = "0";
       XDG_SCREENSHOTS_DIR = "$HOME/Pictures/Screenshots";
     };
 

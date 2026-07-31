@@ -39,8 +39,9 @@ in
     exec-once = sleep 1 && awww img ~/Pictures/Wallpapers/wallpaper1.jpg
     exec-once = hyprctl setcursor Bibata-Modern-Classic 24
 
-    # Import Wayland display into systemd user manager so services inherit it
-    exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
+    # Import Wayland display + Hyprland IPC into systemd user manager so
+    # services (quickshell) can connect to the running instance
+    exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE
 
     # Start the quickshell status bar (via systemd so it survives rebuilds).
     # NOTE: graphical-session.target cannot be started manually (RefuseManualStart),
