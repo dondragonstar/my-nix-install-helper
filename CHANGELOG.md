@@ -3,6 +3,7 @@
 Newest first. Every commit that touches a `.nix` file MUST add an entry here
 (enforced by `hooks/pre-commit`). One line per change: what and why.
 
+- flake.nix, configuration.nix: pin Hyprland to v0.56.1 input and override package+xdph — fixes Firefox popup sliver bug (hyprwm/Hyprland#14936, missing from nixpkgs 26.05's 0.55.4)
 - home.nix: switch default bar from waybar to quickshell
 - hyprland.nix, quickshell.nix: start quickshell via exec-once=systemctl --user start quickshell (graphical-session.target refuses manual start — RefuseManualStart=yes)
 

@@ -8,9 +8,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     wlctl.url = "github:aashish-thapa/wlctl";
+    # Pin Hyprland to v0.56.1 (nixpkgs 26.05 ships 0.55.4, which has the
+    # popup-subsurface scaling bug that makes Firefox menus render as slivers,
+    # fixed by hyprwm/Hyprland#14936 / commit 367becc, merged after 0.55.4).
+    hyprland.url = "github:hyprwm/Hyprland/v0.56.1";
   };
 
-  outputs = { self, nixpkgs, home-manager, wlctl, ... }: let
+  outputs = { self, nixpkgs, home-manager, wlctl, hyprland, ... }: let
     machine = import ./machine.nix;
     validGpus = [ "nvidia" "amd" "intel" "hybrid-nvidia" "vm" "generic" ];
     gpu =
@@ -26,7 +30,7 @@
   in {
     nixosConfigurations.${hostname} = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
-      specialArgs = { inherit hostname username machine; };
+      specialArgs = { inherit hostname username machine hyprland; };
       modules = [
         ./configuration.nix
         ./hardware-configuration.nix

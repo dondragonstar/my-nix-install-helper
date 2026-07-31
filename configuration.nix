@@ -1,4 +1,4 @@
-{ config, lib, pkgs, hostname, username, machine, ... }:
+{ config, lib, pkgs, hostname, username, machine, hyprland, ... }:
 
 {
   imports = [ ./modules/system/storage.nix ];
@@ -74,11 +74,16 @@
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
+    # Use pinned v0.56.1 (see flake.nix) instead of nixpkgs 26.05's 0.55.4,
+    # which has the popup-subsurface scaling bug (hyprwm/Hyprland#14936) that
+    # makes Firefox menus render as slivers.
+    package = hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+    portalPackage = hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
   };
 
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-hyprland pkgs.xdg-desktop-portal-gtk ];
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
     config.common.default = "*";
   };
 
