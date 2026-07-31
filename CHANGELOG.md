@@ -3,6 +3,11 @@
 Newest first. Every commit that touches a `.nix` file MUST add an entry here
 (enforced by `hooks/pre-commit`). One line per change: what and why.
 
+- configuration.nix: swap login greeter ReGreet → greetd + tuigreet (--time --remember --cmd Hyprland) — ReGreet couldn't launch the Hyprland session after auth (session discovery issue), threw back to tty; tuigreet is a direct-command greeter, no session-discovery
+- configuration.nix: drop regreet-only packages from systemPackages (imagemagick, catppuccin-gtk override, papirus-icon-theme, bibata-cursors) — no longer needed without the GTK greeter
+- home.nix, modules/home: re-add quickshell as default bar via my.barChoice (waybar stays optional), start it from hyprland exec-once; drop modules/home/login.nix (regreet wallpaper-sync obsolete with tuigreet)
+- apps.nix: wrap antigravity in a script that unsets NIXOS_OZONE_WL and adds --no-sandbox — app crashes on Wayland without it
+- zsh.nix: rebuild alias → plain sudo nixos-rebuild switch (was bin/rebuild script)
 - flake.nix, configuration.nix: pin xdg-desktop-portal-hyprland to cc8e5ef (new xdph input) — hyprland-input bundle (08d99f7) spins at ~100% CPU after screenshot/screencast (hyprwm/xdg-desktop-portal-hyprland#411, fixed in #417), overheating CPU to 75C+
 - hyprland.nix: import MOZ_ENABLE_WAYLAND into systemd user manager too — Walker/uwsm-launched apps bypass the Hyprland env block, so Firefox fell back to native Wayland (10px popup slivers); now inherited via systemd scope
 - home.nix, hyprland.nix: force MOZ_ENABLE_WAYLAND=0 (session vars + Hyprland env) — Firefox 153 native-Wayland popups collapse to 10px slivers (GTK layout bug, repro'd on fresh profile; XWayland renders correctly)

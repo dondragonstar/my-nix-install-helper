@@ -1,8 +1,6 @@
-{ config, lib, pkgs, hostname, username, machine, hyprland, xdph, ... }:
+{ config, lib, pkgs, hostname, username, machine, ... }:
 
 {
-  imports = [ ./modules/system/storage.nix ];
-
   # hardware-configuration.nix is imported via flake.nix's modules list,
   # not here -- this avoids the duplicate-import trap some tutorials cause
   # when both flake.nix and configuration.nix reference it.
@@ -74,30 +72,26 @@
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
-    # Use pinned v0.56.1 (see flake.nix) instead of nixpkgs 26.05's 0.55.4,
-    # which has the popup-subsurface scaling bug (hyprwm/Hyprland#14936) that
-    # makes Firefox menus render as slivers.
-    package = hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-    # Pinned portal (see flake.nix xdph input): the one bundled with the
-    # hyprland input predates the event-loop hangup fix (#417) and spins at
-    # ~100% CPU after a screenshot/screencast (hyprwm/xdg-desktop-portal-hyprland#411).
-    portalPackage = xdph.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
   };
 
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    extraPortals = [ pkgs.xdg-desktop-portal-hyprland pkgs.xdg-desktop-portal-gtk ];
     config.common.default = "*";
   };
 
   ##############################################################
-  ## Display manager
+  ## Login greeter (greetd + tuigreet)
   ##############################################################
-  services.displayManager.sddm.enable = true;
-  services.displayManager.sddm.wayland.enable = true;
-  services.displayManager.autoLogin.enable = true;
-  services.displayManager.autoLogin.user = username;
-  services.displayManager.defaultSession = "hyprland";
+  services.greetd = {
+    enable = true;
+    settings = {
+      default_session = {
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd Hyprland";
+        user = "greeter";
+      };
+    };
+  };
 
   ##############################################################
   ## Power management / lid-close suspend
@@ -181,8 +175,7 @@
   programs.firefox.enable = true;
 
   services.gnome.gnome-keyring.enable = true;
-  security.pam.services.sddm.enableGnomeKeyring = true;
-  security.pam.services.sddm-autologin.enableGnomeKeyring = true;
+  security.pam.services.greetd.enableGnomeKeyring = true;
 
   system.stateVersion = "26.05";
 }

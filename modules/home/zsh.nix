@@ -6,7 +6,7 @@
     enableCompletion = true;
     shellAliases = {
       ll = "ls -la";
-      rebuild = "/etc/nixos/bin/rebuild";
+      rebuild = "sudo nixos-rebuild switch --flake /etc/nixos#${hostname}";
       drybuild = "sudo nixos-rebuild dry-build --flake /etc/nixos#${hostname}";
       update = "nix flake update /etc/nixos && sudo nixos-rebuild switch --flake /etc/nixos#${hostname}";
       # nixos-rebuild boot: apply on next reboot only — current session stays
