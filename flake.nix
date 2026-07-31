@@ -12,9 +12,17 @@
     # popup-subsurface scaling bug that makes Firefox menus render as slivers,
     # fixed by hyprwm/Hyprland#14936 / commit 367becc, merged after 0.55.4).
     hyprland.url = "github:hyprwm/Hyprland/v0.56.1";
+    # Pin xdg-desktop-portal-hyprland past the event-loop hangup fix (#417,
+    # commit c4616225, 2026-07-24) — the bundle shipped via the hyprland input
+    # (rev 08d99f7, 2026-07-18) spins at ~100% CPU after a screenshot/screencast
+    # (hyprwm/xdg-desktop-portal-hyprland#411), heating the CPU to 75C+.
+    xdph = {
+      url = "github:hyprwm/xdg-desktop-portal-hyprland/cc8e5ef8fb2acef3db488b9a33b0c48c2a4ee204";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, wlctl, hyprland, ... }: let
+  outputs = { self, nixpkgs, home-manager, wlctl, hyprland, xdph, ... }: let
     machine = import ./machine.nix;
     validGpus = [ "nvidia" "amd" "intel" "hybrid-nvidia" "vm" "generic" ];
     gpu =
@@ -30,7 +38,7 @@
   in {
     nixosConfigurations.${hostname} = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
-      specialArgs = { inherit hostname username machine hyprland; };
+      specialArgs = { inherit hostname username machine hyprland xdph; };
       modules = [
         ./configuration.nix
         ./hardware-configuration.nix

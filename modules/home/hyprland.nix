@@ -40,8 +40,10 @@ in
     exec-once = hyprctl setcursor Bibata-Modern-Classic 24
 
     # Import Wayland display + Hyprland IPC into systemd user manager so
-    # services (quickshell) can connect to the running instance
-    exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE
+    # services (quickshell) can connect to the running instance.
+    # MOZ_ENABLE_WAYLAND=0 is also imported so Walker/uwsm-launched apps
+    # (which bypass the Hyprland env block) keep Firefox on XWayland.
+    exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE MOZ_ENABLE_WAYLAND
 
     # Start the quickshell status bar (via systemd so it survives rebuilds).
     # NOTE: graphical-session.target cannot be started manually (RefuseManualStart),

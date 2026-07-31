@@ -3,6 +3,8 @@
 Newest first. Every commit that touches a `.nix` file MUST add an entry here
 (enforced by `hooks/pre-commit`). One line per change: what and why.
 
+- flake.nix, configuration.nix: pin xdg-desktop-portal-hyprland to cc8e5ef (new xdph input) — hyprland-input bundle (08d99f7) spins at ~100% CPU after screenshot/screencast (hyprwm/xdg-desktop-portal-hyprland#411, fixed in #417), overheating CPU to 75C+
+- hyprland.nix: import MOZ_ENABLE_WAYLAND into systemd user manager too — Walker/uwsm-launched apps bypass the Hyprland env block, so Firefox fell back to native Wayland (10px popup slivers); now inherited via systemd scope
 - home.nix, hyprland.nix: force MOZ_ENABLE_WAYLAND=0 (session vars + Hyprland env) — Firefox 153 native-Wayland popups collapse to 10px slivers (GTK layout bug, repro'd on fresh profile; XWayland renders correctly)
 - hyprland.nix: import HYPRLAND_INSTANCE_SIGNATURE into systemd user manager — fixes quickshell workspace highlights (quickshell had no IPC socket env, logged "$HYPRLAND_INSTANCE_SIGNATURE is unset")
 - flake.nix, configuration.nix: pin Hyprland to v0.56.1 input and override package+xdph — fixes Firefox popup sliver bug (hyprwm/Hyprland#14936, missing from nixpkgs 26.05's 0.55.4)

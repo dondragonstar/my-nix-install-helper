@@ -1,4 +1,4 @@
-{ config, lib, pkgs, hostname, username, machine, hyprland, ... }:
+{ config, lib, pkgs, hostname, username, machine, hyprland, xdph, ... }:
 
 {
   imports = [ ./modules/system/storage.nix ];
@@ -78,7 +78,10 @@
     # which has the popup-subsurface scaling bug (hyprwm/Hyprland#14936) that
     # makes Firefox menus render as slivers.
     package = hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-    portalPackage = hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
+    # Pinned portal (see flake.nix xdph input): the one bundled with the
+    # hyprland input predates the event-loop hangup fix (#417) and spins at
+    # ~100% CPU after a screenshot/screencast (hyprwm/xdg-desktop-portal-hyprland#411).
+    portalPackage = xdph.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
   };
 
   xdg.portal = {
