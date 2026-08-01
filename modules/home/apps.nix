@@ -86,6 +86,8 @@
     blueman
     bluetuith
     wlctl.packages.${pkgs.stdenv.hostPlatform.system}.default
+    rclone
+    fuse3
     awww
     waypaper
     (pkgs.writeShellScriptBin "swww" "exec ${pkgs.awww}/bin/awww \"$@\"")

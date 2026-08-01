@@ -13,6 +13,7 @@
     ./modules/home/git.nix
     ./modules/home/zsh.nix
     ./modules/home/apps.nix
+    ./modules/home/drive.nix
   ];
 
   options.my.barChoice = lib.mkOption {

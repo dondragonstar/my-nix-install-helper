@@ -247,6 +247,10 @@
 
   programs.zsh.enable = true;
 
+  # User-space FUSE mounts (rclone Google Drive at ~/Documents):
+  # sets user_allow_other in /etc/fuse.conf so non-root mounts work.
+  programs.fuse.userAllowOther = true;
+
   ##############################################################
   ## System packages
   ##############################################################
