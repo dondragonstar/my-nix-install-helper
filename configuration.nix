@@ -1,4 +1,4 @@
-{ config, lib, pkgs, hostname, username, machine, ... }:
+{ config, lib, pkgs, hostname, username, machine, hyprland, xdph, ... }:
 
 {
   # hardware-configuration.nix is imported via flake.nix's modules list,
@@ -72,24 +72,104 @@
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
+    # Use pinned v0.56.1 (see flake.nix) instead of nixpkgs 26.05's 0.55.4,
+    # which has the popup-subsurface scaling bug (hyprwm/Hyprland#14936) that
+    # makes Firefox menus render as slivers.
+    package = hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+    # Pinned portal (see flake.nix xdph input): the one bundled with the
+    # hyprland input predates the event-loop hangup fix (#417) and spins at
+    # ~100% CPU after a screenshot/screencast (hyprwm/xdg-desktop-portal-hyprland#411).
+    portalPackage = xdph.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
   };
 
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-hyprland pkgs.xdg-desktop-portal-gtk ];
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
     config.common.default = "*";
   };
 
   ##############################################################
-  ## Login greeter (greetd + tuigreet)
+  ## Login greeter (greetd + ReGreet)
+  ##
+  ## ReGreet discovers sessions from the displayManager session
+  ## integration (greetd enables it automatically), so the Hyprland
+  ## session desktop file (Exec=start-hyprland) shows up in the
+  ## login screen dropdown. Background rotates each boot via the
+  ## regreet-wallpaper systemd unit below.
   ##############################################################
-  services.greetd = {
+  programs.regreet = {
     enable = true;
-    settings = {
-      default_session = {
-        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd Hyprland";
-        user = "greeter";
+
+    # Matches the desktop theme: Catppuccin Mocha (blue accent, rimless),
+    # Papirus-Dark icons, Bibata-Modern-Classic cursor, JetBrainsMono Nerd Font.
+    theme = {
+      package = pkgs.catppuccin-gtk.override {
+        variant = "mocha";
+        accents = [ "blue" ];
+        size = "standard";
+        tweaks = [ "rimless" ];
       };
+      name = "catppuccin-mocha-blue-standard+rimless";
+    };
+    iconTheme = {
+      package = pkgs.papirus-icon-theme;
+      name = "Papirus-Dark";
+    };
+    cursorTheme = {
+      package = pkgs.bibata-cursors;
+      name = "Bibata-Modern-Classic";
+    };
+    font = {
+      package = pkgs.nerd-fonts.jetbrains-mono;
+      name = "JetBrainsMono Nerd Font";
+      size = 16;
+    };
+
+    settings = {
+      background = {
+        path = "/var/lib/regreet/background.png";
+        fit = "Cover";
+      };
+      appearance.greeting_msg = "Welcome back";
+      GTK.application_prefer_dark_theme = true;
+      commands = {
+        reboot = [ "systemctl" "reboot" ];
+        poweroff = [ "systemctl" "poweroff" ];
+      };
+    };
+  };
+
+  # Rotate the login-screen wallpaper each boot: pick a random image from the
+  # user's wallpaper folder and copy it to the greeter-accessible location
+  # (/var/lib/regreet/background.png, created+owned by greeter via tmpfiles).
+  systemd.services.regreet-wallpaper = {
+    description = "Pick a random wallpaper for the ReGreet login screen";
+    wantedBy = [ "multi-user.target" ];
+    before = [ "greetd.service" ];
+    after = [ "systemd-tmpfiles-setup.service" ];
+    path = [ pkgs.coreutils pkgs.findutils ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = pkgs.writeShellScript "regreet-wallpaper" ''
+        set -euo pipefail
+        dest=/var/lib/regreet/background.png
+        dir=${config.users.users.${username}.home}/Pictures/wallpapers_flat
+        if [ ! -d "$dir" ]; then
+          exit 0
+        fi
+        # Real wallpapers are >100KB; the folder also contains tiny cursor/UI
+        # assets (waypaper) that must be skipped.
+        mapfile -t candidates < <(
+          find "$dir" -maxdepth 1 -type f \
+            \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) \
+            -size +100k -print 2>/dev/null
+        )
+        if [ ''${#candidates[@]} -eq 0 ]; then
+          exit 0
+        fi
+        pick=''${candidates[$((RANDOM % ''${#candidates[@]}))]}
+        install -o greeter -g greeter -m 0644 "$pick" "$dest"
+      '';
     };
   };
 

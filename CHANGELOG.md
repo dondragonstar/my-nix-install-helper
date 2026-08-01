@@ -3,6 +3,7 @@
 Newest first. Every commit that touches a `.nix` file MUST add an entry here
 (enforced by `hooks/pre-commit`). One line per change: what and why.
 
+- zsh.nix: restore `rebuild` alias → `/etc/nixos/bin/rebuild` (auto-commit + push) — regressed to plain `nixos-rebuild switch` in the greeter swap; script now guards hardware-configuration.nix staging behind ALLOW_HWCONFIG=1, auto-detects branch/remote/hostname, falls back to ~/.ssh/config if no personal key
 - configuration.nix: swap login greeter ReGreet → greetd + tuigreet (--time --remember --cmd Hyprland) — ReGreet couldn't launch the Hyprland session after auth (session discovery issue), threw back to tty; tuigreet is a direct-command greeter, no session-discovery
 - configuration.nix: drop regreet-only packages from systemPackages (imagemagick, catppuccin-gtk override, papirus-icon-theme, bibata-cursors) — no longer needed without the GTK greeter
 - home.nix, modules/home: re-add quickshell as default bar via my.barChoice (waybar stays optional), start it from hyprland exec-once; drop modules/home/login.nix (regreet wallpaper-sync obsolete with tuigreet)
