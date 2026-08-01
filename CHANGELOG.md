@@ -3,6 +3,8 @@
 Newest first. Every commit that touches a `.nix` file MUST add an entry here
 (enforced by `hooks/pre-commit`). One line per change: what and why.
 
+- configuration.nix: give greeter user video/render/input/seat/tty groups — cage/ReGreet couldn't access DRM+input devices, causing glitchy rendering and flaky login
+- configuration.nix: seed /var/lib/regreet/state.toml in regreet-wallpaper service — ReGreet fell back to default login shell (tty) when no session selected; now Hyprland is pre-selected in the dropdown
 - zsh.nix: restore `rebuild` alias → `/etc/nixos/bin/rebuild` (auto-commit + push) — regressed to plain `nixos-rebuild switch` in the greeter swap; script now guards hardware-configuration.nix staging behind ALLOW_HWCONFIG=1, auto-detects branch/remote/hostname, falls back to ~/.ssh/config if no personal key
 - configuration.nix: swap login greeter ReGreet → greetd + tuigreet (--time --remember --cmd Hyprland) — ReGreet couldn't launch the Hyprland session after auth (session discovery issue), threw back to tty; tuigreet is a direct-command greeter, no session-discovery
 - configuration.nix: drop regreet-only packages from systemPackages (imagemagick, catppuccin-gtk override, papirus-icon-theme, bibata-cursors) — no longer needed without the GTK greeter

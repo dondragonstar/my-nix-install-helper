@@ -139,6 +139,14 @@
     };
   };
 
+  # greetd launches the greeter (cage) as this user; it needs access to DRM,
+  # input and render devices to display ReGreet and handle keyboard/mouse.
+  users.users.greeter = {
+    isSystemUser = true;
+    group = "greeter";
+    extraGroups = [ "video" "render" "input" "seat" "tty" ];
+  };
+
   # Rotate the login-screen wallpaper each boot: pick a random image from the
   # user's wallpaper folder and copy it to the greeter-accessible location
   # (/var/lib/regreet/background.png, created+owned by greeter via tmpfiles).
@@ -169,6 +177,15 @@
         fi
         pick=''${candidates[$((RANDOM % ''${#candidates[@]}))]}
         install -o greeter -g greeter -m 0644 "$pick" "$dest"
+        # Seed ReGreet's session cache so Hyprland is pre-selected in the
+        # login dropdown (avoids the default-login-shell fallback).
+        state=/var/lib/regreet/state.toml
+        if [ ! -f "$state" ] || ! grep -q "^${username} = " "$state"; then
+          printf 'last_user = "%s"\n\n[user_to_last_sess]\n%s = "Hyprland"\n' \
+            "${username}" "${username}" > "$state"
+          chown greeter:greeter "$state"
+          chmod 0644 "$state"
+        fi
       '';
     };
   };
