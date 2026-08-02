@@ -1,10 +1,11 @@
 { config, pkgs, lib, username, wlctl, ... }:
 
 {
-  # ── Vesktop: forced flags for screen sharing ──
+  # ── Vesktop: screen-share flags are baked into the `vesktop` binary wrapper
+  #    below, so this entry can stay clean (flags apply from any launcher) ──
   xdg.desktopEntries."vesktop" = {
     name = "Vesktop";
-    exec = "vesktop --ozone-platform-hint=auto --enable-features=WebRTCPipeWireCapturer --disable-gpu-sandbox %U";
+    exec = "vesktop %U";
     icon = "vesktop";
     type = "Application";
     categories = [ "Network" "InstantMessaging" "Chat" ];
@@ -140,7 +141,19 @@
     poppler
     glib
     discord
-    vesktop
+    # ── Vesktop wrapper: always inject the Wayland screen-share flags so
+    #    streaming works from ANY launch path (walker, keybind, terminal),
+    #    not just this desktop entry. Ships the package icons too.
+    (pkgs.runCommand "vesktop" { }
+      ''
+        mkdir -p $out/bin $out/share
+        cp -rs ${pkgs.vesktop}/share/icons $out/share/icons
+        cat > $out/bin/vesktop <<'WRAP'
+        #!/bin/sh
+        exec ${pkgs.vesktop}/bin/vesktop --ozone-platform-hint=auto --enable-features=WebRTCPipeWireCapturer --disable-gpu-sandbox "$@"
+        WRAP
+        chmod +x $out/bin/vesktop
+      '')
     jq
     libnotify
     (pkgs.writeShellScriptBin "nixup" ''
