@@ -18,7 +18,7 @@ Diff:
 {diff}"""
 
 payload = json.dumps({
-    "model": "qwen2.5-coder:3b",
+    "model": "qwen2.5vl:3b",
     "prompt": prompt,
     "stream": False,
 }).encode()
