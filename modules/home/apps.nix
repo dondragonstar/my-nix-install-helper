@@ -144,13 +144,15 @@
     # ── Vesktop wrapper: always inject the Wayland screen-share flags so
     #    streaming works from ANY launch path (walker, keybind, terminal),
     #    not just this desktop entry. Ships the package icons too.
+    #    --disable-gpu-compositing avoids the intermittent black window on
+    #    NVIDIA+Wayland (SCANOUT GBM buffer allocation failure).
     (pkgs.runCommand "vesktop" { }
       ''
         mkdir -p $out/bin $out/share
         cp -rs ${pkgs.vesktop}/share/icons $out/share/icons
         cat > $out/bin/vesktop <<'WRAP'
         #!/bin/sh
-        exec ${pkgs.vesktop}/bin/vesktop --ozone-platform-hint=auto --enable-features=WebRTCPipeWireCapturer --disable-gpu-sandbox "$@"
+        exec ${pkgs.vesktop}/bin/vesktop --ozone-platform-hint=auto --enable-features=WebRTCPipeWireCapturer --disable-gpu-sandbox --disable-gpu-compositing "$@"
         WRAP
         chmod +x $out/bin/vesktop
       '')
