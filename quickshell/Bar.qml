@@ -34,7 +34,7 @@ PanelWindow {
         spacing: theme.spacing
         anchors.centerIn: parent
 
-        Clock {}
+        Clock { id: clockWidget }
     }
 
     Row {
@@ -46,7 +46,7 @@ PanelWindow {
             rightMargin: theme.spacing + 2
         }
 
-        Network {}
+        Network { id: networkWidget }
         Bluetooth {}
         Cpu { id: cpuWidget }
         Temperature {}
@@ -76,5 +76,15 @@ PanelWindow {
     AudioPopup {
         id: audioPopup
         anchorItem: volumeWidget
+    }
+
+    CalendarPopup {
+        id: calPopup
+        anchorItem: clockWidget
+    }
+
+    NetworkPopup {
+        id: networkPopup
+        anchorItem: networkWidget
     }
 }

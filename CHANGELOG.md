@@ -3,6 +3,7 @@
 Newest first. Every commit that touches a `.nix` file MUST add an entry here
 (enforced by `hooks/pre-commit`). One line per change: what and why.
 
+- apps.nix: add cheese — webcam already works (uvcvideo loaded, video group, PipeWire); missing a GUI camera app
 - apps.nix: bake Wayland screen-share flags into a `vesktop` binary wrapper (runCommand shipping bin + package icons) instead of the desktop entry — walker/elephant-launched Vesktop lost streaming flags / black-screened; wrapper guarantees --ozone-platform-hint=auto --enable-features=WebRTCPipeWireCapturer --disable-gpu-sandbox --disable-gpu-compositing from any launcher; --disable-gpu-compositing added to avoid intermittent black window on NVIDIA+Wayland (SCANOUT GBM buffer allocation failure after window close-to-tray + reopen)
 - apps.nix, configuration.nix, home.nix, modules/home/drive.nix: add rclone + FUSE — Google Drive mounted at ~/Documents via systemd user service (vfs-cache full), programs.fuse.userAllowOther for non-root mounts
 - configuration.nix: give greeter user video/render/input/seat/tty groups — cage/ReGreet couldn't access DRM+input devices, causing glitchy rendering and flaky login

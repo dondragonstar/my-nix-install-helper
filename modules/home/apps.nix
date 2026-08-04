@@ -131,6 +131,7 @@
     python3
     nix-output-monitor
     telegram-desktop
+    cheese
     vlc
     qimgv
     zathura

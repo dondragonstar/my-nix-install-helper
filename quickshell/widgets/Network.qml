@@ -22,7 +22,14 @@ Pill {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: wlctlProc.running = true
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: function(mouse) {
+            if (mouse.button === Qt.RightButton) {
+                wlctlProc.running = true;
+            } else {
+                networkPopup.visible = !networkPopup.visible;
+            }
+        }
 
         Rectangle {
             id: netTooltip

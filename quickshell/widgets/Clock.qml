@@ -36,5 +36,12 @@ Pill {
         onTriggered: root.updateTime()
     }
 
+    MouseArea {
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: calPopup.visible = !calPopup.visible
+    }
+
     Component.onCompleted: updateTime()
 }

@@ -21,4 +21,6 @@ ShellRoot {
             }
         }
     }
+
+    Osd {}
 }

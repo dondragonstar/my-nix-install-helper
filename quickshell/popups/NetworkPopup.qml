@@ -88,6 +88,26 @@ PopupBase {
             font.pixelSize: theme.fontSize - 1
         }
 
+        Row {
+            width: parent.width
+            visible: netsvc.state !== "disconnected" && (netsvc.downKbps > 0 || netsvc.upKbps > 0)
+            spacing: 12
+
+            Text {
+                text: "󰇚 " + netsvc.fmtRate(netsvc.downKbps)
+                color: theme.success
+                font.family: theme.font
+                font.pixelSize: theme.fontSize - 1
+            }
+
+            Text {
+                text: "󰕒 " + netsvc.fmtRate(netsvc.upKbps)
+                color: theme.warning
+                font.family: theme.font
+                font.pixelSize: theme.fontSize - 1
+            }
+        }
+
         Rectangle {
             width: parent.width
             height: 1
