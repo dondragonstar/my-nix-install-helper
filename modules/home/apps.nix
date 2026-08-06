@@ -91,6 +91,7 @@
     fuse3
     awww
     waypaper
+    onlyoffice-desktopeditors
     (pkgs.writeShellScriptBin "swww" "exec ${pkgs.awww}/bin/awww \"$@\"")
     (pkgs.writeShellScriptBin "swww-daemon" "exec ${pkgs.awww}/bin/awww-daemon \"$@\"")
     (pkgs.writeShellScriptBin "screenshot" ''

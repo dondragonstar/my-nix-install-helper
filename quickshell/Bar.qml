@@ -51,7 +51,7 @@ PanelWindow {
         Cpu { id: cpuWidget }
         Temperature {}
         Memory {}
-        Backlight {}
+        Backlight { id: backlightWidget }
         Volume { id: volumeWidget }
         Battery {}
         Tray { barWindow: bar._backingWindow ? bar._backingWindow : bar }
@@ -86,5 +86,17 @@ PanelWindow {
     NetworkPopup {
         id: networkPopup
         anchorItem: networkWidget
+    }
+
+    Osd {
+        id: volumeOsd
+        mode: "volume"
+        anchorItem: volumeWidget
+    }
+
+    Osd {
+        id: backlightOsd
+        mode: "backlight"
+        anchorItem: backlightWidget
     }
 }

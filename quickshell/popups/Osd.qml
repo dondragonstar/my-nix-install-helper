@@ -2,19 +2,16 @@ import Quickshell
 import Quickshell.Services.Pipewire
 import QtQuick
 
-// On-screen display: vertical pill on the right edge showing volume or
-// brightness changes, auto-hides after a short delay.
-PanelWindow {
+// On-screen display: small pill shown under its anchor widget (volume or
+// brightness in the bar) when the value changes, auto-hides after a delay.
+PopupWindow {
     id: osd
 
-    screen: Quickshell.screens[0]
+    property Item anchorItem
+    property string mode: "volume"
 
-    anchors {
-        right: true
-    }
-    margins {
-        right: 24
-    }
+    anchor.item: anchorItem
+    anchor.rect.y: theme.barHeight + 6
 
     implicitWidth: 76
     implicitHeight: pillCol.implicitHeight + 28
@@ -118,6 +115,7 @@ PanelWindow {
     property bool volInit: false
 
     onVolChanged: {
+        if (osd.mode !== "volume") return;
         if (!volInit) { volInit = true; return; }
         var pct = Math.round(vol * 100);
         if (muted) {
@@ -128,6 +126,7 @@ PanelWindow {
     }
 
     onMutedChanged: {
+        if (osd.mode !== "volume") return;
         if (!volInit) { volInit = true; return; }
         show("󰝟", Math.round(vol * 100) + "%", Math.round(vol * 100));
     }
@@ -138,6 +137,7 @@ PanelWindow {
     Connections {
         target: backlight
         function onPctChanged() {
+            if (osd.mode !== "backlight") return;
             if (!osd.backlightInit) { osd.backlightInit = true; return; }
             osd.show("󰃠", backlight.pct + "%", backlight.pct);
         }
