@@ -60,7 +60,14 @@
     elephant
     ripgrep
     fd
-    brave
+    # Brave must run native Wayland (ozone) or its share picker only lists
+    # X11 windows — full-screen share impossible.
+    (pkgs.brave.override {
+      commandLineArgs = [
+        "--ozone-platform=wayland"
+        "--enable-features=WebRTCPipeWireCapturer"
+      ];
+    })
     btop
     qdirstat
     zed-editor

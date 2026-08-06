@@ -1,4 +1,5 @@
 # Changelog
+- apps.nix: override brave with --ozone-platform=wayland + WebRTCPipeWireCapturer — under XWayland its share picker only lists X11 windows, full-screen share impossible
 - modules/home/git.nix, AGENTS.md: route all GitHub pushes over HTTPS via url.insteadOf rewrite + path-aware credential helper (~/.local/bin/github-cred) — SSH port 22 (and 443 fallback) blocked on this network, breaking git push; professional repos now rewrite git@github-professional: too
 
 Newest first. Every commit that touches a `.nix` file MUST add an entry here
