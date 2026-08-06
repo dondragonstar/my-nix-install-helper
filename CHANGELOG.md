@@ -1,4 +1,5 @@
 # Changelog
+- modules/home/git.nix, AGENTS.md: route all GitHub pushes over HTTPS via url.insteadOf rewrite + path-aware credential helper (~/.local/bin/github-cred) — SSH port 22 (and 443 fallback) blocked on this network, breaking git push; professional repos now rewrite git@github-professional: too
 
 Newest first. Every commit that touches a `.nix` file MUST add an entry here
 (enforced by `hooks/pre-commit`). One line per change: what and why.

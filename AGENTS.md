@@ -50,8 +50,7 @@ anywhere on this machine. Rules here are enforced by git hooks where possible
 git config user.name && git config user.email   # 1. verify identity
 # 2. make sure CHANGELOG.md has an entry for your change
 git add <files> && git commit -m "..."           # 3. hooks validate
-GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519_personal -o IdentitiesOnly=yes" \
-  git push origin main                           # 4. push (ssh workaround)
+git push origin main                             # 4. push (HTTPS — SSH port 22/443 is blocked on this network; url.insteadOf rewrite + ~/.local/bin/github-cred helper handle it)
 ```
 
 `git commit --no-verify` requires explicit user approval — bypassing hooks
