@@ -10,7 +10,7 @@
       rebuild = "nh os switch";
       drybuild = "nh os build";
       update = "nh os switch --update";
-      # nixos-rebuild boot: apply on next reboot only — current session stays
+      # nh os boot: apply on next reboot only — current session stays
       # stable if a big upgrade breaks something.
       bootbuild = "nh os boot";
       # Evaluate the flake without building — catches eval errors fast.

@@ -37,14 +37,33 @@ anywhere on this machine. Rules here are enforced by git hooks where possible
 3. **Machine-specific values go in `machine.nix` ONLY** — hostname, username,
    timezone, cpu, gpu profile, bus IDs. Never hardcode any of these in
    shared files.
-4. **AI runs `dry-build`, the USER runs `switch`.** Before proposing a
+4. **AI runs the preview build, the USER runs `switch`.** Before proposing a
    rebuild, run
-   `sudo nixos-rebuild dry-build --flake /etc/nixos#<hostname>`
-   and report the result. Never run `nixos-rebuild switch` yourself.
+   `nix build --dry-run /etc/nixos#nixosConfigurations.<hostname>.config.system.build.toplevel`
+   (or `nix flake check /etc/nixos` for a fast eval check) and report the
+   result. Never run `nixos-rebuild switch` or `nh os switch` yourself — the
+   human runs `rebuild` (alias: `nh os switch`).
 5. `/etc/nixos` IS the git repo. There is no copy to sync. Edit in place,
-   dry-build, let the user switch, then commit.
+   preview-build, let the user switch, then commit.
 
-## 4. Commit Flow (this repo)
+## 4. Update / Rebuild Flow (nh — Nix Helper)
+
+The rebuild engine is `nh` (configured via `programs.nh` in configuration.nix;
+`nvd` diffs package changes, `nom` shows the build tree). It escalates to root
+internally — **never prefix `nh` with sudo** ("Don't run nh os as root").
+
+```bash
+update      # alias: nh os switch --update   lock update + rebuild + switch, one shot
+rebuild     # alias: nh os switch            nvd diff + nom tree; bin/rebuild auto-commits + pushes
+drybuild    # alias: nh os build             build next generation WITHOUT switching
+bootbuild   # alias: nh os boot              build, activate on next reboot only
+gc          # alias: nh clean all            GC (--keep-since 4d --keep 3); also runs after every switch
+```
+
+GC is nh-managed (the old weekly `nix.gc` timer was removed — the nh module
+warns against running both).
+
+## 5. Commit Flow (this repo)
 
 ```bash
 git config user.name && git config user.email   # 1. verify identity

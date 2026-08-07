@@ -1,4 +1,5 @@
 # Changelog
+- zsh.nix: fix stale nixos-rebuild comment above bootbuild alias (nh os boot)
 - configuration.nix: add nvd to systemPackages — nh 4.4.2's programs.nh module has no nvd.enable option, so the diff binary must be explicit; without it nh os switch skips package diffs
 - configuration.nix, modules/home/zsh.nix, bin/rebuild: migrate update/rebuild workflow to nh (programs.nh.enable + clean, aliases → nh os switch/build/boot/clean, rebuild script engine → nh) — nvd diffs on every switch, single-command update, less bespoke shell; nix.gc timer dropped (nh module warns it conflicts with programs.nh.clean)
 - apps.nix: override brave with --ozone-platform=wayland + WebRTCPipeWireCapturer — under XWayland its share picker only lists X11 windows, full-screen share impossible

@@ -24,16 +24,25 @@ lives in exactly two files: `machine.nix` (human choices) and
 
 ## Day-to-day workflow
 
+The rebuild engine is `nh` (Nix Helper) — `programs.nh` in configuration.nix,
+`nvd` prints package diffs on every switch, `nom` shows the build tree. nh
+escalates to root internally, so **never prefix it with sudo**. GC is
+nh-managed (`nh clean` after every switch, `--keep-since 4d --keep 3`; the old
+weekly `nix.gc` timer was removed).
+
 ```bash
 # 1. edit sources in /etc/nixos
-drybuild          # alias: sudo nixos-rebuild dry-build --flake /etc/nixos#hydragon2000-pc
-rebuild           # alias: sudo nixos-rebuild switch  --flake /etc/nixos#hydragon2000-pc
+drybuild          # alias: nh os build           build next generation, no switch
+rebuild           # alias: nh os switch          nvd diff + nom tree; auto-commit + push via bin/rebuild
+update            # alias: nh os switch --update lock update + rebuild + switch, one shot
+gc                # alias: nh clean all          GC (also runs automatically after every switch)
 # 2. document in CHANGELOG.md, then commit (hooks validate identity/changelog/syntax)
 git add -A && git commit    # prepare-commit-msg drafts a message via local Ollama
 GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519_personal -o IdentitiesOnly=yes" git push origin main
 ```
 
-AI agents run `drybuild` and report; only the user runs `rebuild`.
+AI agents run `drybuild` (or `nix build --dry-run ...toplevel`) and report;
+only the user runs `rebuild`.
 
 ## Fresh install (new machine)
 
