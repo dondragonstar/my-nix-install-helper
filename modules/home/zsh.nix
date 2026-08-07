@@ -2,20 +2,21 @@
 
 {
   programs.zsh = {
+    # [nh-migration] aliases
     enable = true;
     enableCompletion = true;
     shellAliases = {
       ll = "ls -la";
-      rebuild = "/etc/nixos/bin/rebuild";
-      drybuild = "sudo nixos-rebuild dry-build --flake /etc/nixos#${hostname}";
-      update = "nix flake update /etc/nixos && sudo nixos-rebuild switch --flake /etc/nixos#${hostname}";
+      rebuild = "nh os switch";
+      drybuild = "nh os build";
+      update = "nh os switch --update";
       # nixos-rebuild boot: apply on next reboot only — current session stays
       # stable if a big upgrade breaks something.
-      bootbuild = "sudo nixos-rebuild boot --flake /etc/nixos#${hostname}";
+      bootbuild = "nh os boot";
       # Evaluate the flake without building — catches eval errors fast.
       check = "nix flake check /etc/nixos";
       # Manual garbage collect (7d retention) + store dedup.
-      gc = "sudo nix-collect-garbage --delete-older-than 7d && nix-store --optimise";
+      gc = "nh clean all";
       gcsize = "nix-store --gc --print-dead | tr '\\n' '\\0' | xargs -0 du -hc | tail -n 1";
       cat = "bat";
       ls = "eza";

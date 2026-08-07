@@ -41,14 +41,21 @@
     ];
   };
 
-  # Automatic garbage collection (weekly, keep 7 days) + store dedup.
-  # Runs as systemd timers; zero manual maintenance.
-  nix.gc = {
-    automatic = true;
-    dates = "weekly";
-    options = "--delete-older-than 7d";
-  };
+  # Garbage collection is handled by nh clean (runs after every `nh os switch`,
+  # --keep-since 4d --keep 3) — the nix.gc timer was dropped to avoid the
+  # programs.nh.clean / nix.gc.automatic conflict the nh module warns about.
+  # Store dedup still runs on a weekly timer.
   nix.optimise.automatic = true;
+
+  # [nh-migration] programs.nh
+  programs.nh = {
+    enable = true;
+    flake = "/etc/nixos";
+    clean = {
+      enable = true;
+      extraArgs = "--keep-since 4d --keep 3";
+    };
+  };
 
   nixpkgs.config.allowUnfree = true;
 

@@ -1,4 +1,5 @@
 # Changelog
+- configuration.nix, modules/home/zsh.nix, bin/rebuild: migrate update/rebuild workflow to nh (programs.nh.enable + clean, aliases → nh os switch/build/boot/clean, rebuild script engine → nh) — nvd diffs on every switch, single-command update, less bespoke shell; nix.gc timer dropped (nh module warns it conflicts with programs.nh.clean)
 - apps.nix: override brave with --ozone-platform=wayland + WebRTCPipeWireCapturer — under XWayland its share picker only lists X11 windows, full-screen share impossible
 - modules/home/git.nix, AGENTS.md: route all GitHub pushes over HTTPS via url.insteadOf rewrite + path-aware credential helper (~/.local/bin/github-cred) — SSH port 22 (and 443 fallback) blocked on this network, breaking git push; professional repos now rewrite git@github-professional: too
 
