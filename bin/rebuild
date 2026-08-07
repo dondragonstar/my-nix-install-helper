@@ -38,7 +38,9 @@ err()   { printf '\033[1;31mxx\033[0m %s\n' "$*" >&2; }
 
 info "Building and switching ($FLAKE#$HOST) ..."
 if command -v nh >/dev/null 2>&1; then
-  sudo nh os switch "$FLAKE"
+  # nh escalates to root internally; running it under sudo errors out
+  # ("Don't run nh os as root").
+  nh os switch "$FLAKE"
 else
   info "nh not installed yet (pre-migration first switch) — using nixos-rebuild"
   sudo nixos-rebuild switch --flake "$FLAKE#$HOST"

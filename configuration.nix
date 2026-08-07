@@ -273,6 +273,9 @@
     gnome-keyring
     sqlite
     appimage-run
+    # nh renders nvd package diffs after each `nh os switch`; this nixpkgs's
+    # programs.nh module has no nvd.enable option, so add it explicitly.
+    nvd
   ];
 
   fonts.packages = with pkgs; [
