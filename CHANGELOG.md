@@ -1,4 +1,5 @@
 # Changelog
+- apps.nix: add qbittorrent (5.2.2) + torrent download folders (Anime/Movies/Series) — leech-only torrent setup
 - keybinds.nix, modules/home/hyprland.nix: Hyprland Meta Elevation — migrate config to Lua (hyprland.lua; hyprlang deprecated since 0.55), clipboard history SUPER+V (walker -m clipboard), togglefloating → SUPER+T, animations (curves snappy/smooth, global speed 10), 3-finger touchpad gestures; fix hl.monitor (output = "" + global bezier = "default") after smoke test showed 1.5x zoom + on-screen config errors
 - apps.nix: restore claude-desktop wrapper (AppImage launcher + stale-socket cleanup) dropped in the streaming pass — claude:// desktop entries and PATH binary work again
 - modules/home/zsh.nix, apps.nix, hyprland.nix, keybinds.nix: reverse swaync — remove notification center (package, autostart, SUPER+N) after user rejected it; restore rebuild alias → bin/rebuild so switch auto-commits + pushes via https/github-cred again
