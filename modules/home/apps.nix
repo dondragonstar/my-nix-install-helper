@@ -1,4 +1,4 @@
-{ config, pkgs, lib, username, wlctl, ... }:
+{ config, pkgs, lib, username, wlctl, zen-browser, zen-browser-unwrapped, ... }:
 
 {
   # ── Vesktop: screen-share flags are baked into the `vesktop` binary wrapper
@@ -47,14 +47,31 @@
     settings.StartupWMClass = "nixup";
   };
 
+  # ── Zen Browser ──
+  # Standard daily-driver (vertical tabs, workspaces, split view) rebuilt from
+  # the official binary tarball. Re-wrapped to inject the Widevine CDM path:
+  # Zen has no Google Widevine license, but Linux VMP is NOT enforced, so the
+  # CDM shipped in pkgs.widevine-cdm (home.file ~/.widevine-cdm below) plays
+  # Netflix/Prime/Spotify web fine. NO Google approved signature needed.
   home.packages = with pkgs; [
     # ── Claude Desktop wrapper ──
+    # Clean up stale IPC socket from previous runs (Electron apps leave this behind
+    # when quit from tray, which blocks the next launch)
     (pkgs.writeShellScriptBin "claude-desktop" ''
-      # Clean up stale IPC socket from previous runs (Electron apps leave this behind
-      # when quit from tray, which blocks the next launch)
       rm -f "/run/user/$(id -u)/claude-desktop-qe.sock"
       exec ${pkgs.appimage-run}/bin/appimage-run /home/${username}/Claude_Desktop-1.18286.0-x86_64.AppImage "$@"
     '')
+    (pkgs.wrapFirefox zen-browser-unwrapped {
+      pname = "zen-browser";
+      extraPolicies = {
+        DisableAppUpdate = true;
+        DisableTelemetry = true;
+      };
+      extraPrefs = ''
+        lockPref("media.gmp-widevinecdm.enabled", true);
+        lockPref("media.gmp-widevinecdm.path", "/home/${config.home.username}/.widevine-cdm");
+'';
+    })
     walker
     uwsm
     elephant
@@ -170,5 +187,26 @@
     (pkgs.writeShellScriptBin "nixup" ''
       exec ${pkgs.python3}/bin/python3 /etc/nixos/bin/nixup "$@"
     '')
+    # ── Streaming / daily-drive essentials ──
+    obs-studio
+    ffmpeg-full
+    noisetorch
+    exfatprogs
+    ntfs3g
   ];
+
+  # ── Widevine CDM floor for Zen + Firefox (Netflix/Prime/Spotify web) ──
+  # Flat layout required: Gecko wants libwidevinecdm.so directly in the dir
+  # pointed at by media.gmp-widevinecdm.path (set in the wrappers above/below).
+  home.file.".widevine-cdm/libwidevinecdm.so".source =
+    "${pkgs.widevine-cdm}/share/google/chrome/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so";
+
+  # ── Default browser: Zen ──
+  xdg.mimeApps.defaultApplications = {
+    "text/html" = "zen-browser.desktop";
+    "text/xml" = "zen-browser.desktop";
+    "application/xhtml+xml" = "zen-browser.desktop";
+    "x-scheme-handler/http" = "zen-browser.desktop";
+    "x-scheme-handler/https" = "zen-browser.desktop";
+  };
 }

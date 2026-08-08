@@ -7,7 +7,7 @@
     enableCompletion = true;
     shellAliases = {
       ll = "ls -la";
-      rebuild = "nh os switch";
+      rebuild = "/etc/nixos/bin/rebuild";
       drybuild = "nh os build";
       update = "nh os switch --update";
       # nh os boot: apply on next reboot only — current session stays

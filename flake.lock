@@ -570,7 +570,8 @@
         "hyprland": "hyprland",
         "nixpkgs": "nixpkgs_2",
         "wlctl": "wlctl",
-        "xdph": "xdph_2"
+        "xdph": "xdph_2",
+        "zen-browser": "zen-browser"
       }
     },
     "systems": {
@@ -685,6 +686,26 @@
         "owner": "hyprwm",
         "repo": "xdg-desktop-portal-hyprland",
         "rev": "cc8e5ef8fb2acef3db488b9a33b0c48c2a4ee204",
+        "type": "github"
+      }
+    },
+    "zen-browser": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1786164819,
+        "narHash": "sha256-tvBlGAYyzHYdLwn035bRCrB1mcMjvNNavcNZ293AIIA=",
+        "owner": "youwen5",
+        "repo": "zen-browser-flake",
+        "rev": "f9af5f7017cea1c159e17922288fb38ff94d28cd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "youwen5",
+        "repo": "zen-browser-flake",
         "type": "github"
       }
     }

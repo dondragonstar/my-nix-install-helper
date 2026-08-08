@@ -56,6 +56,10 @@
     { type = "bindel"; mods = ""; key = "XF86AudioRaiseVolume";  action = "exec, wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+";  description = "Raise volume";  category = "Audio"; }
     { type = "bindel"; mods = ""; key = "XF86AudioLowerVolume";  action = "exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-";   description = "Lower volume";  category = "Audio"; }
     { type = "bindl";  mods = ""; key = "XF86AudioMute";         action = "exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle";  description = "Toggle mute";    category = "Audio"; }
+    { type = "bindl";  mods = ""; key = "XF86AudioMicMute";      action = "exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle";  description = "Toggle mic mute"; category = "Audio"; }
+
+    # ── Streaming ──
+    { mods = "SUPER"; key = "O";            action = "exec, obs";                  description = "Open OBS Studio";              category = "Streaming"; }
 
     # ── Keybind Menu (opens Walker in keybinds-only mode) ──
     { mods = "SUPER"; key = "H";            action = "exec, walker -s keybinds";   description = "Search keybinds in Walker";      category = "Keybinds"; }

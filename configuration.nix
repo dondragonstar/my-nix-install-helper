@@ -283,7 +283,31 @@
     font-awesome
   ];
 
-  programs.firefox.enable = true;
+  # Firefox wrapped with the Widevine CDM path (Linux VMP exemption — CDM from
+  # pkgs.widevine-cdm, copied to ~/.widevine-cdm by home.nix). Prefs locked so
+  # DRM (Netflix/Prime/Spotify) keeps working after browser profile resets.
+  programs.firefox = {
+    enable = true;
+    package = pkgs.firefox.override {
+      extraPrefs = ''
+        lockPref("media.gmp-widevinecdm.enabled", true);
+        lockPref("media.gmp-widevinecdm.path", "${config.users.users.${username}.home}/.widevine-cdm");
+      '';
+    };
+  };
+
+  ##############################################################
+  ## Power profiles (balanced / power-saver / performance —
+  ## the Windows-battery-slider equivalent for this laptop)
+  ##############################################################
+  services.power-profiles-daemon.enable = true;
+
+  ##############################################################
+  ## Virtual camera (v4l2loopback) for OBS virtual-camera output
+  ##############################################################
+  boot.extraModulePackages = [ config.boot.kernelPackages.v4l2loopback ];
+  boot.kernelModules = [ "v4l2loopback" ];
+  boot.extraModprobeConfig = "options v4l2loopback exclusive_caps=1";
 
   services.gnome.gnome-keyring.enable = true;
   security.pam.services.greetd.enableGnomeKeyring = true;
