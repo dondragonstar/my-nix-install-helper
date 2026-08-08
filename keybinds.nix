@@ -10,7 +10,7 @@
 
     # ── Windows ──
     { mods = "SUPER"; key = "W";            action = "killactive";                 description = "Close active window";           category = "Windows"; }
-    { mods = "SUPER"; key = "V";            action = "togglefloating";             description = "Toggle floating window";        category = "Windows"; }
+    { mods = "SUPER"; key = "T";            action = "togglefloating";             description = "Toggle floating window";        category = "Windows"; }
     { mods = "SUPER"; key = "F";            action = "fullscreen";                 description = "Toggle fullscreen";             category = "Windows"; }
     { type = "bindm"; mods = "SUPER"; key = "mouse:272";   action = "movewindow";            description = "Move window (drag)";            category = "Windows"; }
     { type = "bindm"; mods = "SUPER"; key = "mouse:273";   action = "resizewindow";           description = "Resize window (drag)";          category = "Windows"; }
@@ -43,6 +43,9 @@
 
     # ── Wallpaper ──
     { mods = "SUPER SHIFT"; key = "Space";  action = "exec, waypaper --backend swww";  description = "Open wallpaper picker";     category = "Wallpaper"; }
+
+    # ── Clipboard ──
+    { mods = "SUPER"; key = "V";            action = "exec, walker -m clipboard";  description = "Clipboard history";             category = "Clipboard"; }
 
     # ── Screenshots ──
     { mods = "SHIFT"; key = "Print";        action = "exec, screenshot screen";    description = "Take full-screen screenshot";   category = "Screenshots"; }
