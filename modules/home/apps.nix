@@ -77,15 +77,23 @@
     elephant
     ripgrep
     fd
-    # Brave: auto-detect Wayland (graceful fallback), enable PipeWire screen
-    # capture, disable GPU compositing (prevents GBM SCANOUT crash on iGPU).
-    (pkgs.brave.override {
-      commandLineArgs = [
-        "--ozone-platform-hint=auto"
-        "--enable-features=WebRTCPipeWireCapturer"
-        "--disable-gpu-compositing"
-      ];
-    })
+    # Brave: runCommand wrapper (like vesktop) bakes env + flags into the
+    # script so screenshare works from ANY launch path (walker, keybind,
+    # terminal). pkgs.brave.override only adds CLI flags — env vars set in
+    # home.sessionVariables are missing from walker/elephant systemd scopes.
+    (pkgs.runCommand "brave" { }
+      ''
+        mkdir -p $out/bin $out/share
+        cp -rs ${pkgs.brave}/share/* $out/share/ 2>/dev/null || true
+        cat > $out/bin/brave <<'WRAP'
+        #!/bin/sh
+        export XDG_SESSION_TYPE=wayland
+        export NIXOS_OZONE_WL=1
+        export ELECTRON_OZONE_PLATFORM_HINT=auto
+        exec ${pkgs.brave}/bin/brave --ozone-platform-hint=auto --enable-features=WebRTCPipeWireCapturer --disable-gpu-compositing "$@"
+        WRAP
+        chmod +x $out/bin/brave
+      '')
     btop
     qdirstat
     zed-editor
@@ -179,6 +187,9 @@
         cp -rs ${pkgs.vesktop}/share/icons $out/share/icons
         cat > $out/bin/vesktop <<'WRAP'
         #!/bin/sh
+        export XDG_SESSION_TYPE=wayland
+        export NIXOS_OZONE_WL=1
+        export ELECTRON_OZONE_PLATFORM_HINT=auto
         exec ${pkgs.vesktop}/bin/vesktop --ozone-platform-hint=auto --enable-features=WebRTCPipeWireCapturer --disable-gpu-sandbox --disable-gpu-compositing "$@"
         WRAP
         chmod +x $out/bin/vesktop
