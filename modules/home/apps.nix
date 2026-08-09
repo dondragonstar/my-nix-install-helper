@@ -25,6 +25,19 @@
     settings.StartupWMClass = "brave-browser";
   };
 
+  # ── Zen: override desktop entry to force MOZ_ENABLE_WAYLAND=1 so Zen
+  #    uses native Wayland (PipeWire screenshare works). The session-level
+  #    MOZ_ENABLE_WAYLAND=0 is for Firefox's popup bug — Zen is unaffected. ──
+  xdg.desktopEntries."zen" = {
+    name = "Zen Browser";
+    exec = "env MOZ_ENABLE_WAYLAND=1 zen --name zen %U";
+    icon = "zen";
+    type = "Application";
+    categories = [ "Network" "WebBrowser" ];
+    mimeType = [ "text/html" "x-scheme-handler/http" "x-scheme-handler/https" ];
+    settings.StartupWMClass = "zen";
+  };
+
   # ── Claude Desktop entry ──
   xdg.desktopEntries."claude-desktop" = {
     name = "Claude";
