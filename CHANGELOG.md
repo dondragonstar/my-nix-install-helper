@@ -1,4 +1,5 @@
 # Changelog
+- apps.nix, configuration.nix: remove torrenting stack (qbittorrent, aria2, Torrent download dirs, dl/nyaa/yts CLIs) — deleted by user request; leech-only setup fully removed
 - configuration.nix: add aria2 to systemPackages — dl --aria2 fallback downloader for nyaa .torrent files (replaces staged sed script from SDD session)
 - theme.nix: force gtk-application-prefer-dark-theme=1 — qBittorrent 5.2.2 shows light when QT_QPA_PLATFORMTHEME=gtk3 (ColorScheme=Dark stored but GTK palette overrides); HM gtk3 extraConfig puts it in settings.ini
 - apps.nix: add qbittorrent (5.2.2) + torrent download folders (Anime/Movies/Series) — leech-only torrent setup

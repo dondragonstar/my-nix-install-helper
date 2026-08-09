@@ -187,8 +187,6 @@
     (pkgs.writeShellScriptBin "nixup" ''
       exec ${pkgs.python3}/bin/python3 /etc/nixos/bin/nixup "$@"
     '')
-    # ── Torrenting (leech-only: no constant uplink) ──
-    qbittorrent
     # ── Streaming / daily-drive essentials ──
     obs-studio
     ffmpeg-full
@@ -202,11 +200,6 @@
   # pointed at by media.gmp-widevinecdm.path (set in the wrappers above/below).
   home.file.".widevine-cdm/libwidevinecdm.so".source =
     "${pkgs.widevine-cdm}/share/google/chrome/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so";
-
-  # ── Torrent download folders (qBittorrent default cats) ──
-  home.activation.createTorrentDirs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    mkdir -p ~/Downloads/Torrent/Anime ~/Downloads/Torrent/Movies ~/Downloads/Torrent/Series
-  '';
 
   # ── Default browser: Zen ──
   xdg.mimeApps.defaultApplications = {
