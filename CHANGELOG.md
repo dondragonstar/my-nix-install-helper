@@ -1,3 +1,5 @@
+- apps.nix: fix Brave screenshare — `--ozone-platform=wayland` → `--ozone-platform-hint=auto` (hard ozone flag crashed GPU init on integrated graphics: black screen with cursor instead of portal picker), add `--disable-gpu-compositing`; flags now apply from any launcher
+
 # Changelog
 - apps.nix, configuration.nix: remove torrenting stack (qbittorrent, aria2, Torrent download dirs, dl/nyaa/yts CLIs) — deleted by user request; leech-only setup fully removed
 - configuration.nix: add aria2 to systemPackages — dl --aria2 fallback downloader for nyaa .torrent files (replaces staged sed script from SDD session)

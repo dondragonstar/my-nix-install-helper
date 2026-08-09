@@ -77,12 +77,13 @@
     elephant
     ripgrep
     fd
-    # Brave must run native Wayland (ozone) or its share picker only lists
-    # X11 windows — full-screen share impossible.
+    # Brave: auto-detect Wayland (graceful fallback), enable PipeWire screen
+    # capture, disable GPU compositing (prevents GBM SCANOUT crash on iGPU).
     (pkgs.brave.override {
       commandLineArgs = [
-        "--ozone-platform=wayland"
+        "--ozone-platform-hint=auto"
         "--enable-features=WebRTCPipeWireCapturer"
+        "--disable-gpu-compositing"
       ];
     })
     btop
