@@ -13,6 +13,18 @@
     settings.StartupWMClass = "Vesktop";
   };
 
+  # ── Brave: override desktop entry so walker/elephant launch our wrapper
+  #    (which bakes env + flags) instead of the upstream nix store binary ──
+  xdg.desktopEntries."brave-browser" = {
+    name = "Brave Web Browser";
+    exec = "brave %U";
+    icon = "brave-browser";
+    type = "Application";
+    categories = [ "Network" "WebBrowser" ];
+    mimeType = [ "text/html" "x-scheme-handler/http" "x-scheme-handler/https" ];
+    settings.StartupWMClass = "brave-browser";
+  };
+
   # ── Claude Desktop entry ──
   xdg.desktopEntries."claude-desktop" = {
     name = "Claude";
