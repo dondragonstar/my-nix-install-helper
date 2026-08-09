@@ -268,6 +268,7 @@
     vim
     wget
     curl
+    aria2
     waybar
     pciutils
     gnome-keyring
