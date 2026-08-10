@@ -45,6 +45,6 @@
   # ── AI agent protocol distribution ──
   # /etc/nixos/AGENTS.md is the single source; these symlinks make every
   # agent tool find it. mkOutOfStoreSymlink → edits apply without rebuild.
-  home.file."AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "/etc/nixos/AGENTS.md";
-  home.file."GEMINI.md".source = config.lib.file.mkOutOfStoreSymlink "/etc/nixos/AGENTS.md";
+  home.file."agents/AGENTS.md".source = config.lib.file.mkOutOfStoreSymlink "/etc/nixos/AGENTS.md";
+  home.file."agents/GEMINI.md".source = config.lib.file.mkOutOfStoreSymlink "/etc/nixos/AGENTS.md";
 }

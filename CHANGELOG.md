@@ -1,4 +1,5 @@
 - apps.nix: fix Brave screenshare — `--ozone-platform=wayland` → `--ozone-platform-hint=auto` (hard ozone flag crashed GPU init on integrated graphics: black screen with cursor instead of portal picker), add `--disable-gpu-compositing`; flags now apply from any launcher
+- theme.nix: move agent protocol symlinks from home root to ~/agents/ (AGENTS.md, GEMINI.md) — home declutter; agents reach them at ~/agents/AGENTS.md + ~/agents/GEMINI.md
 - apps.nix: fix Brave+Vesktop screenshare from walker/keybind — switch Brave from pkgs.brave.override to runCommand wrapper (like vesktop) that bakes XDG_SESSION_TYPE=wayland, NIXOS_OZONE_WL=1, ELECTRON_OZONE_PLATFORM_HINT=auto into the script; add same env exports to vesktop wrapper; home.sessionVariables only reach shell-launched apps, not walker/elephant systemd scopes
 
 # Changelog
