@@ -1,4 +1,4 @@
-{ config, pkgs, lib, username, wlctl, zen-browser, zen-browser-unwrapped, ... }:
+{ config, pkgs, lib, username, wlctl, zen-browser, zen-browser-unwrapped, walker, ... }:
 
 {
   # ── Vesktop: screen-share flags are baked into the `vesktop` binary wrapper
@@ -97,6 +97,8 @@
         lockPref("media.gmp-widevinecdm.path", "/home/${config.home.username}/.widevine-cdm");
 '';
     })
+# walker comes from the walker-git flake input (2.17.0) — see flake.nix;
+    # 26.05's 2.16.2 daemon core-dumps at login (activate/connect_changed panic)
     walker
     uwsm
     elephant

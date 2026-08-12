@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, walker, ... }:
 
 {
   # ── Walker (app launcher) + Elephant (desktop indexer) ──
@@ -66,12 +66,36 @@
 
     [[emergencies]]
     text = "Restart Walker"
-    command = "pkill walker || true; uwsm app -- walker --gapplication-service &"
+    command = "systemctl --user restart walker"
   '';
 
   # Theme files at the Omarchy location
   home.file.".local/share/omarchy/default/walker/themes/omarchy-default/style.css".source = ../../walker-style.css;
   home.file.".local/share/omarchy/default/walker/themes/omarchy-default/layout.xml".source = ../../walker-layout.xml;
+
+  # Walker daemon as a systemd user service (self-healing).
+  # Preserves the fix in flake.nix: the 2.16.2 daemon panics in activate and
+  # core-dumps, so the old `uwsm app -- sh -c '...&& walker...'` autostart left
+  # NO resident daemon -> every SUPER+SPACE was a ~3.4s cold start.
+  # NOTE: pkill -x walker can never match this process (nixpkgs wrapper
+  # execs .walker-wrapped), so all restarts go through systemd from now on.
+  systemd.user.services.walker = {
+    Unit = {
+      Description = "Walker launcher daemon";
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      Type = "simple";
+      ExecStartPre = "${pkgs.systemd}/bin/systemctl --user start elephant";
+      ExecStart = "${walker}/bin/walker --gapplication-service";
+      Restart = "on-failure";
+      RestartSec = 3;
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
+  };
 
   # Elephant config: use uwsm as launch prefix so apps get proper session activation
   xdg.configFile."elephant/elephant.toml".text = ''

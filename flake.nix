@@ -28,9 +28,18 @@
       url = "github:youwen5/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Walker 2.17.0 from upstream git flake (pinned rev) — 26.05 ships 2.16.2,
+    # whose daemon panics in walker::activate (EditableExt::connect_changed)
+    # and core-dumps at login, so no resident daemon survives and every open
+    # is a ~3.4s cold start. Do NOT follow nixpkgs: the walker-git.cachix.org
+    # binary (already a substituter) was built against the flake's own nixpkgs,
+    # so following ours would force a source rebuild.
+    walker-git = {
+      url = "github:abenz1267/walker/42b3ed88abf50bc52638fb2835b7f17e3ea3ac4c";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, wlctl, hyprland, xdph, zen-browser, ... }: let
+  outputs = { self, nixpkgs, home-manager, wlctl, hyprland, xdph, zen-browser, walker-git, ... }: let
     machine = import ./machine.nix;
     validGpus = [ "nvidia" "amd" "intel" "hybrid-nvidia" "vm" "generic" ];
     gpu =
@@ -55,7 +64,7 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = { inherit hostname username wlctl; inherit (zen-browser.packages.x86_64-linux) zen-browser zen-browser-unwrapped; };
+          home-manager.extraSpecialArgs = { inherit hostname username wlctl; inherit (zen-browser.packages.x86_64-linux) zen-browser zen-browser-unwrapped; walker = walker-git.packages.x86_64-linux.default; };
           home-manager.users.${username} = import ./home.nix;
           home-manager.backupFileExtension = "hm-backup";
         }

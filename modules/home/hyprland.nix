@@ -71,7 +71,7 @@ in
     -- Autostart
     hl.on("hyprland.start", function()
         hl.exec_cmd("awww-daemon")
-        hl.exec_cmd("sleep 1 && awww img ~/Pictures/Wallpapers/wallpaper1.jpg")
+        hl.exec_cmd("sleep 1 && awww img ~/Pictures/wallpapers_flat/wallpaper1.jpg")
         hl.exec_cmd("hyprctl setcursor Bibata-Modern-Classic 24")
         -- Import Wayland display + Hyprland IPC into systemd user manager so
         -- services (quickshell) can connect to the running instance.
@@ -84,9 +84,11 @@ in
         hl.exec_cmd("systemctl --user start quickshell")
         -- Idle daemon (hypridle): locks to the login page after the sleep timeout
         hl.exec_cmd("systemctl --user start hypridle")
-        -- Walker daemon (delayed for elephant + Wayland readiness)
-        -- We use a small helper that ensures elephant is running before launching walker
-        hl.exec_cmd("uwsm app -- sh -c 'systemctl --user start elephant && walker --gapplication-service'")
+        -- Walker daemon (systemd user service — self-healing; starts elephant
+        -- itself. The old `uwsm app -- sh -c '...'` autostart left a dead
+        -- daemon after the 2.16.2 activate/connect_changed panic, so every
+        -- open was a ~3.4s cold start.)
+        hl.exec_cmd("systemctl --user start walker")
         hl.exec_cmd("systemctl --user start tumblerd")
     end)
 
@@ -189,7 +191,7 @@ in
   #   monitor=,preferred,auto,1
   #
   #   exec-once = awww-daemon
-  #   exec-once = sleep 1 && awww img ~/Pictures/Wallpapers/wallpaper1.jpg
+  #   exec-once = sleep 1 && awww img ~/Pictures/wallpapers_flat/wallpaper1.jpg
   #   exec-once = hyprctl setcursor Bibata-Modern-Classic 24
   #
   #   exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE MOZ_ENABLE_WAYLAND

@@ -1,15 +1,15 @@
-# ── Sleep / idle-lock system (hypridle) ──
+# ── Sleep / idle-lock system (hypridle + hyprlock) ──
 #
-# Idle → lock to the ReGreet login page (greetd 0.9+ lock support: loginctl
-# lock-session shows the greeter; unlocking resumes the session) → display off.
-# Lid close / power key already suspend via services.logind; hypridle locks
-# before sleep so waking lands on the login page.
+# Idle → hyprlock (Hyprland lock screen) → display off. Lid close / power key
+# suspend via services.logind; hypridle runs hyprlock before sleep so waking
+# lands on the lock screen. SUPER+L locks now; SUPER+S opens the sleep menu.
 #
 # Default timeout is 5 min. Change it at runtime without a rebuild:
 #   sleep-time 15      # lock after 15 min, display off after 16
 #   sleep-time never   # disable idle lock (lid close still locks on suspend)
-# or SUPER+S → Walker sleep menu, or SUPER+L to lock now.
-# NOTE: a rebuild resets the runtime timeout to the default below.
+# The sleep-time script OWNS ~/.config/hypr/hypridle.conf (no longer HM-managed),
+# so runtime choices persist across rebuilds. A home.activation seeder writes the
+# 5-min default only when the file is missing (fresh profile).
 { config, pkgs, lib, ... }:
 
 let
@@ -20,13 +20,14 @@ let
   # runtime) — keep both in sync when changing timeouts/commands.
   mkHypridleConf = lockSec: dpmsSec: ''
     general {
-        before_sleep_cmd = loginctl lock-session
+        lock_cmd = hyprlock
+        before_sleep_cmd = hyprlock
         after_sleep_cmd = hyprctl dispatch dpms on
     }
 
     listener {
         timeout = ${lockSec}
-        on-timeout = loginctl lock-session
+        on-timeout = hyprlock
     }
 
     listener {
@@ -34,11 +35,26 @@ let
         on-timeout = hyprctl dispatch dpms off
     }
   '';
+
+  # Nix-store copy of the default config; seeded to the runtime path if absent.
+  defaultHypridleConf = pkgs.writeText "hypridle-default.conf" (mkHypridleConf "300" "360");
 in
 {
-  # Default config (5 min lock, display off +1 min). Overwritten at runtime by
-  # sleep-time; next rebuild restores this default.
-  home.file.".config/hypr/hypridle.conf".text = mkHypridleConf "300" "360";
+  # sleep-time owns ~/.config/hypr/hypridle.conf. Seed the default only when the
+  # file does not yet exist (fresh HOME) or is still an HM-managed store symlink
+  # from a pre-hyprlock generation (writing through it would hit the read-only
+  # store path — the trap this change exists to retire). Never clobber a
+  # regular runtime file that sleep-time wrote.
+  home.activation.seedHypridleConf =
+    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      hypridleConf="${homeDir}/.config/hypr/hypridle.conf"
+      if [ ! -e "$hypridleConf" ] || [ -L "$hypridleConf" ]; then
+        $DRY_RUN_CMD rm -f "$hypridleConf"
+        $DRY_RUN_CMD mkdir -p "$(dirname "$hypridleConf")"
+        $DRY_RUN_CMD cp ${defaultHypridleConf} "$hypridleConf"
+        $DRY_RUN_CMD chmod 644 "$hypridleConf"
+      fi
+    '';
 
   home.file.".local/bin/sleep-time" = {
     executable = true;
@@ -49,38 +65,42 @@ in
       conf="$HOME/.config/hypr/hypridle.conf"
       arg="''${1:-5}"
 
+      mkdir -p "$(dirname "$conf")"
+
       write_locked_config() {
         local lock_sec="$1" dpms_sec="$2"
         cat > "$conf" <<EOF
       general {
-          before_sleep_cmd = loginctl lock-session
+          lock_cmd = hyprlock
+          before_sleep_cmd = hyprlock
           after_sleep_cmd = hyprctl dispatch dpms on
       }
 
       listener {
           timeout = ''${lock_sec}
-          on-timeout = loginctl lock-session
+          on-timeout = hyprlock
       }
 
       listener {
           timeout = ''${dpms_sec}
           on-timeout = hyprctl dispatch dpms off
       }
-      EOF
+EOF
       }
 
       case "$arg" in
         never|off|disable|0)
           cat > "$conf" <<'EOF'
       general {
-          before_sleep_cmd = loginctl lock-session
+          lock_cmd = hyprlock
+          before_sleep_cmd = hyprlock
           after_sleep_cmd = hyprctl dispatch dpms on
       }
       # Idle lock disabled via `sleep-time never` (lid close still locks on suspend).
-      # Re-enable with sleep-time <minutes> or on next rebuild.
-      EOF
+      # Re-enable with sleep-time <minutes>.
+EOF
           msg="Idle lock: never"
-          detail="Re-enable with sleep-time <minutes> or rebuild"
+          detail="Re-enable with sleep-time <minutes>"
           ;;
         *)
           [[ "$arg" =~ ^[0-9]+$ ]] || { echo "usage: sleep-time <minutes|never>" >&2; exit 1; }
@@ -118,6 +138,91 @@ in
     end
   '';
 
+  # ── hyprlock lock screen (Catppuccin Mocha, matches walker-style.css) ──
+  # hyprlang syntax verified against hyprlock 0.9.5 assets/example.conf.
+  home.file.".config/hypr/hyprlock.conf".text = ''
+    $font = JetBrainsMono Nerd Font
+
+    general {
+        hide_cursor = true
+        disable_loading_bar = true
+        grace = 5
+        ignore_empty_input = true
+    }
+
+    # Blurred, dimmed wallpaper; solid Mocha base as fallback if the image is gone.
+    background {
+        monitor =
+        path = ${homeDir}/Pictures/wallpapers_flat/wallpaper1.jpg
+        color = rgba(1e1e2eff)
+        blur_passes = 3
+        blur_size = 6
+        noise = 0.0117
+        contrast = 0.9
+        brightness = 0.75
+        vibrancy = 0.17
+        vibrancy_darkness = 0.0
+    }
+
+    # Clock
+    label {
+        monitor =
+        text = $TIME
+        font_size = 95
+        font_family = $font
+        color = rgba(cdd6f4ff)
+        shadow_passes = 2
+        shadow_size = 4
+        halign = center
+        valign = center
+        position = 0, 130
+    }
+
+    # Date
+    label {
+        monitor =
+        text = cmd[update:60000] date +"%A, %d %B"
+        font_size = 26
+        font_family = $font
+        color = rgba(a6adc8ff)
+        halign = center
+        valign = center
+        position = 0, 45
+    }
+
+    # Greeting
+    label {
+        monitor =
+        text = Welcome back, hydragon2000
+        font_size = 18
+        font_family = $font
+        color = rgba(a6adc8ff)
+        halign = center
+        valign = center
+        position = 0, -55
+    }
+
+    # Password field — floating translucent pill
+    input-field {
+        monitor =
+        size = 300, 55
+        rounding = 16
+        outline_thickness = 2
+        inner_color = rgba(313244cc)
+        outer_color = rgba(89b4faff)
+        check_color = rgba(89b4faff)
+        fail_color = rgba(f38ba8ff)
+        font_color = rgba(cdd6f4ff)
+        placeholder_text = <i>Password…</i>
+        fail_text = <i>$FAIL (<b>$ATTEMPTS</b>)</i>
+        fade_on_empty = true
+        dots_spacing = 0.3
+        halign = center
+        valign = center
+        position = 0, -130
+    }
+  '';
+
   # hypridle as a systemd user service (survives rebuilds, restartable from
   # sleep-time). Started explicitly from Hyprland autostart.
   systemd.user.services.hypridle = {
@@ -133,5 +238,5 @@ in
     Install = { WantedBy = [ "graphical-session.target" ]; };
   };
 
-  home.packages = [ pkgs.hypridle ];
+  home.packages = [ pkgs.hypridle pkgs.hyprlock ];
 }
