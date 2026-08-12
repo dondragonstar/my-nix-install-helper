@@ -14,6 +14,7 @@
     ./modules/home/zsh.nix
     ./modules/home/apps.nix
     ./modules/home/drive.nix
+    ./modules/home/idle.nix
   ];
 
   options.my.barChoice = lib.mkOption {

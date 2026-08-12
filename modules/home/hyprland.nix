@@ -82,6 +82,8 @@ in
         -- NOTE: graphical-session.target cannot be started manually (RefuseManualStart),
         -- so we start quickshell directly instead of relying on target pull-in.
         hl.exec_cmd("systemctl --user start quickshell")
+        -- Idle daemon (hypridle): locks to the login page after the sleep timeout
+        hl.exec_cmd("systemctl --user start hypridle")
         -- Walker daemon (delayed for elephant + Wayland readiness)
         -- We use a small helper that ensures elephant is running before launching walker
         hl.exec_cmd("uwsm app -- sh -c 'systemctl --user start elephant && walker --gapplication-service'")
