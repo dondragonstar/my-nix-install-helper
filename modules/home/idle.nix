@@ -150,10 +150,12 @@ EOF
         ignore_empty_input = true
     }
 
-    # Blurred, dimmed wallpaper; solid Mocha base as fallback if the image is gone.
+    # Screenshot of the live desktop (hyprlock's own default) so the lock
+    # screen always matches the CURRENT wallpaper (awww / swww), whatever it is.
+    # Solid Mocha base as fallback if capture fails.
     background {
         monitor =
-        path = ${homeDir}/Pictures/wallpapers_flat/wallpaper1.jpg
+        path = screenshot
         color = rgba(1e1e2eff)
         blur_passes = 3
         blur_size = 6

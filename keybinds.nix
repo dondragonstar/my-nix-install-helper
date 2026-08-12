@@ -30,7 +30,7 @@
     # ── System ──
     { mods = "SUPER"; key = "M";            action = "exit";                       description = "Exit Hyprland (logout)";        category = "System"; }
     { mods = "SUPER"; key = "L";            action = "exec, hyprlock";             description = "Lock screen";                   category = "System"; }
-    { mods = "SUPER"; key = "S";            action = "exec, walker -s sleep";      description = "Change sleep time";             category = "System"; }
+    { mods = "SUPER"; key = "S";            action = "exec, walker -m menus:sleep"; description = "Change sleep time";             category = "System"; }
 
     # ── Launchers ──
     { mods = "SUPER"; key = "Space";        action = "exec, walker";               description = "Open app launcher (Walker)";    category = "Launchers"; }

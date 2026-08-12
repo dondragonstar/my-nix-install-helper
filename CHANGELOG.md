@@ -79,3 +79,5 @@ Newest first. Every commit that touches a `.nix` file MUST add an entry here
 - fix: hyprland autostart wallpaper path ~/Pictures/Wallpapers/ -> ~/Pictures/wallpapers_flat/ (old dir gone; wallpaper was never applied at login)
 - fix: sleep-time heredoc delimiters were indented inside the nix string (bash heredocs need them at column 0) — the script never parsed; unindented both EOF markers (also latent in the old loginctl version)
 - fix: seedHypridleConf also replaces an HM store symlink (pre-hyprlock generations) so sleep-time takes ownership without a manual rm
+- fix: SUPER+S opened the default launcher instead of the sleep menu — 'walker -s sleep' looks up a provider *set* named sleep that does not exist (only 'keybinds' set is defined), so it silently fell back; each elephant menu registers as provider menus:<name>, so use 'walker -m menus:sleep' (verified: elephant serves 8 sleep entries)
+- fix: hyprlock background was hardcoded to wallpaper1.jpg; now path = screenshot (hyprlock 0.9.5 example.conf default) — lock screen always matches the current desktop wallpaper (awww/swww)
