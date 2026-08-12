@@ -84,7 +84,7 @@
     # when quit from tray, which blocks the next launch)
     (pkgs.writeShellScriptBin "claude-desktop" ''
       rm -f "/run/user/$(id -u)/claude-desktop-qe.sock"
-      exec ${pkgs.appimage-run}/bin/appimage-run /home/${username}/Claude_Desktop-1.18286.0-x86_64.AppImage "$@"
+      exec ${pkgs.appimage-run}/bin/appimage-run /home/${username}/Applications/Claude_Desktop-1.18286.0-x86_64.AppImage "$@"
     '')
     (pkgs.wrapFirefox zen-browser-unwrapped {
       pname = "zen-browser";
