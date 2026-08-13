@@ -59,6 +59,29 @@ let
   hyprlandBindsLua = lib.concatStringsSep "\n" (map mkBindLineLua keybinds.binds);
 in
 {
+  # Restore the last waypaper choice at login so wallpapers persist across
+  # reboot/re-login (waypaper saves `wallpaper =` in config.ini; the old
+  # autostart hardcoded wallpaper1.jpg and forgot the choice every boot).
+  home.file.".local/bin/restore-wallpaper" = {
+    executable = true;
+    text = ''
+      #!/usr/bin/env bash
+      set -u
+      cfg="$HOME/.config/waypaper/config.ini"
+      wp=""
+      if [ -f "$cfg" ]; then
+        wp="$(awk -F' = ' '$1=="wallpaper" {print $2; exit}' "$cfg" 2>/dev/null || true)"
+      fi
+      if [ -n "$wp" ]; then
+        wp="''${wp/#\~/$HOME}"
+      fi
+      if [ -n "$wp" ] && [ -f "$wp" ]; then
+        exec awww img "$wp"
+      fi
+      exec awww img "$HOME/Pictures/wallpapers_flat/wallpaper1.jpg"
+    '';
+  };
+
   # ── Hyprland config (Lua — v0.55+ native Lua config API) ──
   # NOTE: waybar is NOT started here. It runs as a systemd user service
   # (see waybar.nix) so it survives nixos-rebuild without a reboot.
@@ -71,7 +94,7 @@ in
     -- Autostart
     hl.on("hyprland.start", function()
         hl.exec_cmd("awww-daemon")
-        hl.exec_cmd("sleep 1 && awww img ~/Pictures/wallpapers_flat/wallpaper1.jpg")
+        hl.exec_cmd("sleep 1 && restore-wallpaper")
         hl.exec_cmd("hyprctl setcursor Bibata-Modern-Classic 24")
         -- Import Wayland display + Hyprland IPC into systemd user manager so
         -- services (quickshell) can connect to the running instance.
@@ -191,7 +214,7 @@ in
   #   monitor=,preferred,auto,1
   #
   #   exec-once = awww-daemon
-  #   exec-once = sleep 1 && awww img ~/Pictures/wallpapers_flat/wallpaper1.jpg
+  #   exec-once = sleep 1 && restore-wallpaper
   #   exec-once = hyprctl setcursor Bibata-Modern-Classic 24
   #
   #   exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE MOZ_ENABLE_WAYLAND

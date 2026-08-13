@@ -44,7 +44,7 @@
     { mods = "SUPER SHIFT"; key = "B";      action = "exec, bluetuith-launcher";   description = "Open Bluetooth (Bluetuith)";    category = "Bluetooth"; }
 
     # ── Wallpaper ──
-    { mods = "SUPER SHIFT"; key = "Space";  action = "exec, waypaper --backend swww";  description = "Open wallpaper picker";     category = "Wallpaper"; }
+    { mods = "SUPER SHIFT"; key = "Space";  action = "exec, waypaper";             description = "Open wallpaper picker";     category = "Wallpaper"; }
 
     # ── Clipboard ──
     { mods = "SUPER"; key = "V";            action = "exec, walker -m clipboard";  description = "Clipboard history";             category = "Clipboard"; }
