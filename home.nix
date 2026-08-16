@@ -13,6 +13,7 @@
     ./modules/home/git.nix
     ./modules/home/zsh.nix
     ./modules/home/apps.nix
+    ./modules/home/nvim.nix
     ./modules/home/drive.nix
     ./modules/home/idle.nix
   ];
