@@ -234,6 +234,18 @@
   services.gvfs.enable = true;
   services.udisks2.enable = true;
 
+  # No DE polkit agent in session → auto-authorize user for disk mounts
+  security.polkit.extraConfig = ''
+    polkit.addRule(function(action, subject) {
+      if ((action.id == "org.freedesktop.udisks2.filesystem-mount-system" ||
+           action.id == "org.freedesktop.udisks2.filesystem-mount-other-seat" ||
+           action.id == "org.freedesktop.udisks2.filesystem-mount") &&
+          subject.user == "${username}") {
+        return polkit.Result.YES;
+      }
+    });
+  '';
+
   ##############################################################
   ## Ollama (local AI models)
   ##############################################################
