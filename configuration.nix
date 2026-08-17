@@ -229,6 +229,12 @@
   services.blueman.enable = true;
 
   ##############################################################
+  ## Thunar automount support: NTFS drives + MTP phones
+  ##############################################################
+  services.gvfs.enable = true;
+  services.udisks2.enable = true;
+
+  ##############################################################
   ## Ollama (local AI models)
   ##############################################################
   services.ollama = {

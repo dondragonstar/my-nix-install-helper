@@ -108,6 +108,12 @@ in
       vim.g.mapleader = " "
       vim.g.maplocalleader = " "
 
+      -- lazy.nvim's setup() runs `vim.go.loadplugins = false`, which makes nvim
+      -- drop the pack/*/start/* glob from runtimepath. Prepend lazy.nvim's own
+      -- path so its modules (e.g. lazy.view.commands in headless mode) stay
+      -- resolvable for the whole setup.
+      vim.opt.rtp:prepend("${pkgs.vimPlugins.lazy-nvim}")
+
       local lazypath = "${devFarm}"
       require("lazy").setup({
         spec = {
