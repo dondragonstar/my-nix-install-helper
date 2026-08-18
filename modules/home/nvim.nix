@@ -100,7 +100,7 @@ in
       end
 
       local ok_lualine, lualine = pcall(require, "lualine")
-      if ok_lualine then lualine.setup({ options = { theme = "catppuccin" } }) end
+      if ok_lualine then lualine.setup({ options = { theme = "catppuccin-mocha" } }) end
 
       local ok_wk, wk = pcall(require, "which-key")
       if ok_wk then

@@ -96,6 +96,20 @@
   };
 
   ##############################################################
+  ## Input / Key remapping (keyd — evdev-level, covers TTY +
+  ## login + Hyprland; one-way caps→esc, esc key untouched so all
+  ## its functions survive. Caps lock toggle is sacrificed — the
+  ## whole point.)
+  ##############################################################
+  services.keyd = {
+    enable = true;
+    keyboards.default = {
+      ids = [ "*" ];
+      settings.main.capslock = "esc";
+    };
+  };
+
+  ##############################################################
   ## Login greeter (greetd + ReGreet)
   ##
   ## ReGreet discovers sessions from the displayManager session
