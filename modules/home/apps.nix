@@ -1,4 +1,4 @@
-{ config, pkgs, lib, username, wlctl, zen-browser, zen-browser-unwrapped, walker, ... }:
+{ config, pkgs, lib, username, wlctl, walker, ... }:
 
 {
   # ── Vesktop: screen-share flags are baked into the `vesktop` binary wrapper
@@ -38,19 +38,6 @@
     settings.StartupWMClass = "vivaldi";
   };
 
-  # ── Zen: override desktop entry to force MOZ_ENABLE_WAYLAND=1 so Zen
-  #    uses native Wayland (PipeWire screenshare works). The session-level
-  #    MOZ_ENABLE_WAYLAND=0 is for Firefox's popup bug — Zen is unaffected. ──
-  xdg.desktopEntries."zen" = {
-    name = "Zen Browser";
-    exec = "env MOZ_ENABLE_WAYLAND=1 zen --name zen %U";
-    icon = "zen";
-    type = "Application";
-    categories = [ "Network" "WebBrowser" ];
-    mimeType = [ "text/html" "x-scheme-handler/http" "x-scheme-handler/https" ];
-    settings.StartupWMClass = "zen";
-  };
-
   # ── Claude Desktop entry ──
   xdg.desktopEntries."claude-desktop" = {
     name = "Claude";
@@ -85,12 +72,12 @@
     settings.StartupWMClass = "nixup";
   };
 
-  # ── Zen Browser ──
-  # Standard daily-driver (vertical tabs, workspaces, split view) rebuilt from
-  # the official binary tarball. Re-wrapped to inject the Widevine CDM path:
-  # Zen has no Google Widevine license, but Linux VMP is NOT enforced, so the
-  # CDM shipped in pkgs.widevine-cdm (home.file ~/.widevine-cdm below) plays
-  # Netflix/Prime/Spotify web fine. NO Google approved signature needed.
+  # ── Vivaldi ──
+  # Chromium-engine daily driver. Wrapped like Brave below (Wayland + PipeWire
+  # screenshare env/flags baked into the script so they apply from any
+  # launcher). Bundles its own proprietary libffmpeg.so, so H.264/AAC/Netflix
+  # need no extra codec package; the home.file ~/.widevine-cdm stays for
+  # system Firefox (DRM content there).
   home.packages = with pkgs; [
     # ── Claude Desktop wrapper ──
     # Clean up stale IPC socket from previous runs (Electron apps leave this behind
@@ -99,17 +86,6 @@
       rm -f "/run/user/$(id -u)/claude-desktop-qe.sock"
       exec ${pkgs.appimage-run}/bin/appimage-run /home/${username}/Applications/Claude_Desktop-1.18286.0-x86_64.AppImage "$@"
     '')
-    (pkgs.wrapFirefox zen-browser-unwrapped {
-      pname = "zen-browser";
-      extraPolicies = {
-        DisableAppUpdate = true;
-        DisableTelemetry = true;
-      };
-      extraPrefs = ''
-        lockPref("media.gmp-widevinecdm.enabled", true);
-        lockPref("media.gmp-widevinecdm.path", "/home/${config.home.username}/.widevine-cdm");
-'';
-    })
 # walker comes from the walker-git flake input (2.17.0) — see flake.nix;
     # 26.05's 2.16.2 daemon core-dumps at login (activate/connect_changed panic)
     walker
@@ -260,18 +236,18 @@
     ntfs3g
   ];
 
-  # ── Widevine CDM floor for Zen + Firefox (Netflix/Prime/Spotify web) ──
+  # ── Widevine CDM floor for system Firefox (Netflix/Prime/Spotify web) ──
   # Flat layout required: Gecko wants libwidevinecdm.so directly in the dir
   # pointed at by media.gmp-widevinecdm.path (set in the wrappers above/below).
   home.file.".widevine-cdm/libwidevinecdm.so".source =
     "${pkgs.widevine-cdm}/share/google/chrome/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so";
 
-  # ── Default browser: Zen ──
+  # ── Default browser: Vivaldi (replaces Zen, retired 2026-08) ──
   xdg.mimeApps.defaultApplications = {
-    "text/html" = "zen-browser.desktop";
-    "text/xml" = "zen-browser.desktop";
-    "application/xhtml+xml" = "zen-browser.desktop";
-    "x-scheme-handler/http" = "zen-browser.desktop";
-    "x-scheme-handler/https" = "zen-browser.desktop";
+    "text/html" = "vivaldi-stable.desktop";
+    "text/xml" = "vivaldi-stable.desktop";
+    "application/xhtml+xml" = "vivaldi-stable.desktop";
+    "x-scheme-handler/http" = "vivaldi-stable.desktop";
+    "x-scheme-handler/https" = "vivaldi-stable.desktop";
   };
 }

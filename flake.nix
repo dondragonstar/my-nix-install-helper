@@ -20,14 +20,6 @@
       url = "github:hyprwm/xdg-desktop-portal-hyprland/cc8e5ef8fb2acef3db488b9a33b0c48c2a4ee204";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # Zen Browser (Firefox fork, Arc-style tabs) — not packaged in the pinned
-    # nixpkgs (Jul 2025 rev). youwen5/zen-browser-flake provides official
-    # binary tarballs (no source build), wraps them for NixOS, and bakes
-    # DisableAppUpdate. Following nixpkgs pins the wrapper to 26.05 too.
-    zen-browser = {
-      url = "github:youwen5/zen-browser-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     # Walker 2.17.0 from upstream git flake (pinned rev) — 26.05 ships 2.16.2,
     # whose daemon panics in walker::activate (EditableExt::connect_changed)
     # and core-dumps at login, so no resident daemon survives and every open
@@ -39,7 +31,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, wlctl, hyprland, xdph, zen-browser, walker-git, ... }: let
+  outputs = { self, nixpkgs, home-manager, wlctl, hyprland, xdph, walker-git, ... }: let
     machine = import ./machine.nix;
     validGpus = [ "nvidia" "amd" "intel" "hybrid-nvidia" "vm" "generic" ];
     gpu =
@@ -64,7 +56,7 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = { inherit hostname username wlctl; inherit (zen-browser.packages.x86_64-linux) zen-browser zen-browser-unwrapped; walker = walker-git.packages.x86_64-linux.default; };
+          home-manager.extraSpecialArgs = { inherit hostname username wlctl; walker = walker-git.packages.x86_64-linux.default; };
           home-manager.users.${username} = import ./home.nix;
           home-manager.backupFileExtension = "hm-backup";
         }
