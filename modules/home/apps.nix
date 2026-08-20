@@ -25,6 +25,19 @@
     settings.StartupWMClass = "brave-browser";
   };
 
+  # ── Vivaldi: override desktop entry so walker/elephant launch our wrapper
+  #    (bakes Wayland + PipeWire screenshare env/flags) instead of the store
+  #    binary. Bundles its own libffmpeg.so — no vivaldi-ffmpeg-codecs needed.
+  xdg.desktopEntries."vivaldi-stable" = {
+    name = "Vivaldi";
+    exec = "vivaldi %U";
+    icon = "vivaldi";
+    type = "Application";
+    categories = [ "Network" "WebBrowser" ];
+    mimeType = [ "text/html" "x-scheme-handler/http" "x-scheme-handler/https" ];
+    settings.StartupWMClass = "vivaldi";
+  };
+
   # ── Zen: override desktop entry to force MOZ_ENABLE_WAYLAND=1 so Zen
   #    uses native Wayland (PipeWire screenshare works). The session-level
   #    MOZ_ENABLE_WAYLAND=0 is for Firefox's popup bug — Zen is unaffected. ──
@@ -208,6 +221,19 @@
     #    not just this desktop entry. Ships the package icons too.
     #    --disable-gpu-compositing avoids the intermittent black window on
     #    NVIDIA+Wayland (SCANOUT GBM buffer allocation failure).
+    (pkgs.runCommand "vivaldi" { }
+      ''
+        mkdir -p $out/bin $out/share
+        cp -rs ${pkgs.vivaldi}/share/* $out/share/ 2>/dev/null || true
+        cat > $out/bin/vivaldi <<'WRAP'
+        #!/bin/sh
+        export XDG_SESSION_TYPE=wayland
+        export NIXOS_OZONE_WL=1
+        export ELECTRON_OZONE_PLATFORM_HINT=auto
+        exec ${pkgs.vivaldi}/bin/vivaldi --ozone-platform-hint=auto --enable-features=WebRTCPipeWireCapturer --disable-gpu-compositing "$@"
+        WRAP
+        chmod +x $out/bin/vivaldi
+      '')
     (pkgs.runCommand "vesktop" { }
       ''
         mkdir -p $out/bin $out/share
