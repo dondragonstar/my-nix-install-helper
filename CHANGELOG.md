@@ -27,6 +27,8 @@
 - modules/home/nvim.nix: add IDE features to plain neovim — fuzzy finder (fzf-lua on PATH fzf), LSP for rust+py (lspconfig wired to rust-analyzer/pyright, no mason), catppuccin theme, lualine statusline, which-key popup, gitsigns, autopairs, comment-nvim, indent-blankline; every plugin setup wrapped in pcall so a single broken plugin never bricks nvim (treesitter deliberately excluded)
 - modules/home/git.nix, AGENTS.md: route all GitHub pushes over HTTPS via url.insteadOf rewrite + path-aware credential helper (~/.local/bin/github-cred) — SSH port 22 (and 443 fallback) blocked on this network, breaking git push; professional repos now rewrite git@github-professional: too
 
+- flake.nix, home.nix, modules/home/spotify.nix (new): add Spotify + Spicetify adblock — spicetify-nix flake input (Gerg-L, follows nixpkgs), homeManagerModules catppuccin mocha theme + adblock/hidePodcasts/shuffle extensions, blocks audio + banner ads on free accounts; spiced Spotify replaces vanilla pkgs.spotify via programs.spicetify
+
 Newest first. Every commit that touches a `.nix` file MUST add an entry here
 (enforced by `hooks/pre-commit`). One line per change: what and why.
 

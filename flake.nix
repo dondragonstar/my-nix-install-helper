@@ -29,9 +29,13 @@
     walker-git = {
       url = "github:abenz1267/walker/42b3ed88abf50bc52638fb2835b7f17e3ea3ac4c";
     };
+    spicetify-nix = {
+      url = "github:Gerg-L/spicetify-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, wlctl, hyprland, xdph, walker-git, ... }: let
+  outputs = { self, nixpkgs, home-manager, wlctl, hyprland, xdph, walker-git, spicetify-nix, ... }: let
     machine = import ./machine.nix;
     validGpus = [ "nvidia" "amd" "intel" "hybrid-nvidia" "vm" "generic" ];
     gpu =
@@ -56,7 +60,7 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = { inherit hostname username wlctl; walker = walker-git.packages.x86_64-linux.default; };
+          home-manager.extraSpecialArgs = { inherit hostname username wlctl; walker = walker-git.packages.x86_64-linux.default; inputs = { inherit spicetify-nix; }; };
           home-manager.users.${username} = import ./home.nix;
           home-manager.backupFileExtension = "hm-backup";
         }

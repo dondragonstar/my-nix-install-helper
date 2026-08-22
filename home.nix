@@ -16,6 +16,7 @@
     ./modules/home/nvim.nix
     ./modules/home/drive.nix
     ./modules/home/idle.nix
+    ./modules/home/spotify.nix
   ];
 
   options.my.barChoice = lib.mkOption {
