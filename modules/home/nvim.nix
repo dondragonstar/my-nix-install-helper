@@ -22,6 +22,11 @@
     tree-sitter
   ];
 
+  # ~/.config/nvim is fully runtime-owned (LazyVim starter). Block HM's
+  # auto-generated init.lua stub — it would shadow the starter's init.lua
+  # and LazyVim would never load.
+  xdg.configFile."nvim/init.lua".enable = lib.mkForce false;
+
   programs.neovim = {
     enable = true;
     vimAlias = true;
