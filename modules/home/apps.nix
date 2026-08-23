@@ -1,4 +1,4 @@
-{ config, pkgs, lib, username, wlctl, walker, ... }:
+{ config, pkgs, lib, username, wlctl, zen-browser, zen-browser-unwrapped, walker, ... }:
 
 {
   # ── Vesktop: screen-share flags are baked into the `vesktop` binary wrapper
@@ -36,6 +36,19 @@
     categories = [ "Network" "WebBrowser" ];
     mimeType = [ "text/html" "x-scheme-handler/http" "x-scheme-handler/https" ];
     settings.StartupWMClass = "vivaldi";
+  };
+
+  # ── Zen: override desktop entry to force MOZ_ENABLE_WAYLAND=1 so Zen
+  #    uses native Wayland (PipeWire screenshare works). The session-level
+  #    MOZ_ENABLE_WAYLAND=0 is for Firefox's popup bug — Zen is unaffected. ──
+  xdg.desktopEntries."zen" = {
+    name = "Zen Browser";
+    exec = "env MOZ_ENABLE_WAYLAND=1 zen --name zen %U";
+    icon = "zen";
+    type = "Application";
+    categories = [ "Network" "WebBrowser" ];
+    mimeType = [ "text/html" "x-scheme-handler/http" "x-scheme-handler/https" ];
+    settings.StartupWMClass = "zen";
   };
 
   # ── Claude Desktop entry ──
@@ -86,6 +99,17 @@
       rm -f "/run/user/$(id -u)/claude-desktop-qe.sock"
       exec ${pkgs.appimage-run}/bin/appimage-run /home/${username}/Applications/Claude_Desktop-1.18286.0-x86_64.AppImage "$@"
     '')
+    (pkgs.wrapFirefox zen-browser-unwrapped {
+      pname = "zen-browser";
+      extraPolicies = {
+        DisableAppUpdate = true;
+        DisableTelemetry = true;
+      };
+      extraPrefs = ''
+        lockPref("media.gmp-widevinecdm.enabled", true);
+        lockPref("media.gmp-widevinecdm.path", "/home/${config.home.username}/.widevine-cdm");
+'';
+    })
 # walker comes from the walker-git flake input (2.17.0) — see flake.nix;
     # 26.05's 2.16.2 daemon core-dumps at login (activate/connect_changed panic)
     walker
@@ -236,21 +260,21 @@
     ntfs3g
   ];
 
-  # ── Widevine CDM floor for system Firefox (Netflix/Prime/Spotify web) ──
+  # ── Widevine CDM floor for Zen + Firefox (Netflix/Prime/Spotify web) ──
   # Flat layout required: Gecko wants libwidevinecdm.so directly in the dir
   # pointed at by media.gmp-widevinecdm.path (set in the wrappers above/below).
   home.file.".widevine-cdm/libwidevinecdm.so".source =
     "${pkgs.widevine-cdm}/share/google/chrome/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so";
 
-  # ── Default browser: Vivaldi (replaces Zen, retired 2026-08) ──
+  # ── Default browser: Zen ──
   xdg.mimeApps.defaultApplications = {
-    "text/html" = "vivaldi-stable.desktop";
-    "text/xml" = "vivaldi-stable.desktop";
-    "application/xhtml+xml" = "vivaldi-stable.desktop";
-    "x-scheme-handler/http" = "vivaldi-stable.desktop";
-    "x-scheme-handler/https" = "vivaldi-stable.desktop";
-    "x-scheme-handler/about" = "vivaldi-stable.desktop";
-    "x-scheme-handler/unknown" = "vivaldi-stable.desktop";
-    "application/pdf" = "vivaldi-stable.desktop";
+    "text/html" = "zen.desktop";
+    "text/xml" = "zen.desktop";
+    "application/xhtml+xml" = "zen.desktop";
+    "x-scheme-handler/http" = "zen.desktop";
+    "x-scheme-handler/https" = "zen.desktop";
+    "x-scheme-handler/about" = "zen.desktop";
+    "x-scheme-handler/unknown" = "zen.desktop";
+    "application/pdf" = "zen.desktop";
   };
 }
