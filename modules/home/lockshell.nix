@@ -344,6 +344,14 @@ in
     pkgs.brightnessctl
   ];
 
+  home.file.".local/bin/sleep-time".source = "${hydraScripts}/bin/sleep-time";
+  home.file.".local/bin/hydra-screensaver".source = "${hydraScripts}/bin/hydra-screensaver";
+  home.file.".local/bin/hydra-launch-screensaver".source = "${hydraScripts}/bin/hydra-launch-screensaver";
+  home.file.".local/bin/hydra-system-lock".source = "${hydraScripts}/bin/hydra-system-lock";
+  home.file.".local/bin/hydra-system-wake".source = "${hydraScripts}/bin/hydra-system-wake";
+  home.file.".local/bin/hydra-system-sleep-monitor".source = "${hydraScripts}/bin/hydra-system-sleep-monitor";
+  home.file.".local/bin/hydra-system-sleep-lock".source = "${hydraScripts}/bin/hydra-system-sleep-lock";
+
   # ── Quickshell lock/idle shell instance ──
   home.file.".config/quickshell-lock" = {
     source = ../../quickshell-lock;
