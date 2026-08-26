@@ -344,5 +344,9 @@
   services.gnome.gnome-keyring.enable = true;
   security.pam.services.greetd.enableGnomeKeyring = true;
 
+  # PAM service for the quickshell lock screen (lockshell.nix) — unix
+  # password auth, same shape omarchy provisions as omarchy-lock-password.
+  security.pam.services.hydra-lock = { };
+
   system.stateVersion = "26.05";
 }

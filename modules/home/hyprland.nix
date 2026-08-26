@@ -105,8 +105,9 @@ in
         -- NOTE: graphical-session.target cannot be started manually (RefuseManualStart),
         -- so we start quickshell directly instead of relying on target pull-in.
         hl.exec_cmd("systemctl --user start quickshell")
-        -- Idle daemon (hypridle): locks to the login page after the sleep timeout
-        hl.exec_cmd("systemctl --user start hypridle")
+        -- Lock/idle shell + sleep-lock watcher (Omarchy-style, see lockshell.nix)
+        hl.exec_cmd("systemctl --user start hydra-lock-shell")
+        hl.exec_cmd("systemctl --user start hydra-sleep-lock")
         -- Walker daemon (systemd user service — self-healing; starts elephant
         -- itself. The old `uwsm app -- sh -c '...'` autostart left a dead
         -- daemon after the 2.16.2 activate/connect_changed panic, so every
