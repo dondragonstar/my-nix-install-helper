@@ -72,7 +72,7 @@ let
 
       wait_for_resize
       while true; do
-        ttfx -i "$art" --frame-rate 120 --canvas-width 0 --canvas-height 0 \
+        ttfx -i "$art" --frame-rate 30 --canvas-width 0 --canvas-height 0 \
           --reuse-canvas --anchor-canvas c --anchor-text c --random-effect \
           --no-eol --no-restore-cursor &
         while pgrep -t "''${tty_dev#/dev/}" -x ttfx >/dev/null; do
@@ -80,6 +80,8 @@ let
             exit_screensaver
           fi
         done
+        # Let the finished effect linger before morphing into the next one.
+        sleep 6
       done
       EOF
 
