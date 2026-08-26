@@ -207,17 +207,9 @@ in
         center = true,
         size = { 900, 550 },
     })
-    -- Screensaver: fullscreen, opaque, no borders/gaps so ttfx owns the screen
-    hl.window_rule({
-        name = "screensaver-fullscreen",
-        match = { class = "^(org.hydra.screensaver)$" },
-        fullscreen = true,
-        opacity = 1.0,
-        rounding = 0,
-        border_size = 0,
-        gaps_in = 0,
-        gaps_out = 0,
-    })
+    -- NOTE: no windowrule for org.hydra.screensaver — the launcher passes
+    -- fullscreen/opacity/black-bg via alacritty -o overrides instead, because
+    -- this Hyprland Lua shim rejects decoration fields on window rules.
   '';
 
   # NOTE: To revert, also restore mkBindLine and hyprlandBinds from git history
