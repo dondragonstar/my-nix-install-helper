@@ -27,7 +27,7 @@ Item {
 
   readonly property bool locked: lockRequested || sessionLock.locked || sessionLock.secure
 
-  function requestLock() {
+  function requestLock(reason) {
     if (!root.pamConfigured) {
       console.log("hydra lock denied: missing-pam")
       return false
@@ -35,10 +35,12 @@ Item {
     if (root.locked) return true
     resetAuth()
     root.lockRequested = true
-    armBlankTimer()
+    // Blank the display only when the lock came from the idle cycle — a
+    // manual SUPER+L should keep the screen lit while you step away briefly.
+    if (reason === "idle") armBlankTimer()
     refreshBackground()
     sessionLock.locked = true
-    console.log("hydra lock requested")
+    console.log("hydra lock requested (" + (reason || "manual") + ")")
     return true
   }
 
@@ -106,11 +108,12 @@ Item {
   }
   Process {
     id: blankProcess
-    command: ["bash", "-c", "brightnessctl -qs 2 >/dev/null; brightnessctl -q set 0 2>/dev/null || true"]
+    // Save current brightness then drop to 0; wakeProcess restores via -r.
+    command: ["bash", "-c", "brightnessctl -q -s set 0 2>/dev/null || true"]
   }
   Process {
     id: wakeProcess
-    command: ["bash", "-c", "brightnessctl -qr restore 2>/dev/null || true"]
+    command: ["bash", "-c", "brightnessctl -q -r 2>/dev/null || true"]
   }
 
   // ── Session lock ──

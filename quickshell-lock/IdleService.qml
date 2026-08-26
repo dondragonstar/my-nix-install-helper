@@ -57,7 +57,7 @@ Item {
     root.idledThisCycle = false
     root.screensaverStartedThisCycle = false
     resetScreensaverWindows()
-    lockSvc.requestLock()
+    lockSvc.requestLock("idle")
   }
 
   function startIdleCycle() {
@@ -174,7 +174,7 @@ Item {
   Process { id: screensaverProcess }
   Process {
     id: wakeProcess
-    command: ["bash", "-c", "brightnessctl -qr restore 2>/dev/null || true"]
+    command: ["bash", "-c", "brightnessctl -q -r 2>/dev/null || true"]
   }
 
   // ── Config + stay-awake state: FileView watches, Process re-reads ──

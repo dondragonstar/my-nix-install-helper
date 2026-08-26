@@ -27,6 +27,8 @@ let
     pkgs.brightnessctl
     pkgs.coreutils
     pkgs.bash
+    # swww (awww wrapper) — LockService reads the current wallpaper through it
+    pkgs.awww
   ];
 
   hydraScripts = pkgs.runCommand "hydra-scripts" { }
@@ -159,7 +161,7 @@ let
       cat > $out/bin/hydra-system-wake <<'EOF'
       #!/usr/bin/env bash
       # Wake displays: restore brightness after idle/suspend.
-      brightnessctl -qr restore 2>/dev/null || true
+      brightnessctl -q -r 2>/dev/null || true
       EOF
 
       cat > $out/bin/hydra-system-sleep-lock <<'EOF'
