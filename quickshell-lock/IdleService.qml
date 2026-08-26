@@ -57,7 +57,7 @@ Item {
     root.idledThisCycle = false
     root.screensaverStartedThisCycle = false
     resetScreensaverWindows()
-    lockService.requestLock()
+    lockSvc.requestLock()
   }
 
   function startIdleCycle() {

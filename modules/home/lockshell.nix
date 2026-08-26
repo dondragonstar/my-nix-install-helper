@@ -40,6 +40,11 @@ let
       # exits on any key/mouse input or when the window loses focus.
       set -u
 
+      # Single-instance lock: a second invocation would stack render loops
+      # that each respawn effects forever (the "playing over each other" bug).
+      exec 9>"''${XDG_RUNTIME_DIR:-/tmp}/hydra-screensaver.lock"
+      flock -n 9 || exit 0
+
       art="$HOME/.config/branding/screensaver.txt"
       [[ -f $art ]] || exit 0
 
@@ -48,6 +53,7 @@ let
           || hyprctl keyword cursor:invisible false &>/dev/null || true
         pkill -x ttfx 2>/dev/null
         pkill -f '[o]rg.hydra.screensaver' 2>/dev/null
+        pkill -f '[h]ydra-screensaver' 2>/dev/null
         exit 0
       }
       trap exit_screensaver SIGINT SIGTERM SIGHUP SIGQUIT
@@ -67,6 +73,8 @@ let
       }
 
       in_focus() {
+        # Debug mode (HYDRA_SS_DEBUG=1): ignore focus so manual testing works.
+        [[ ''${HYDRA_SS_DEBUG:-0} == 1 ]] && return 0
         hyprctl activewindow -j 2>/dev/null | grep -q '"class": *"org.hydra.screensaver"'
       }
 
@@ -131,8 +139,10 @@ let
       # Reset keyboard layout to the first entry so the password always types.
       hyprctl switchxkblayout all 0 >/dev/null 2>&1
 
-      # A running screensaver fights the lock surface — tear it down.
+      # A running screensaver fights the lock surface — tear it down fully:
+      # ttfx frames AND the renderer loop (which would otherwise respawn).
       pkill -x ttfx 2>/dev/null || true
+      pkill -f '[h]ydra-screensaver' 2>/dev/null || true
       pkill -f '[o]rg.hydra.screensaver' 2>/dev/null || true
 
       exit $rc

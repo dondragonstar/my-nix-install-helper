@@ -12,5 +12,5 @@ import Quickshell
 
 ShellRoot {
   IdleService { id: idle }
-  LockService { id: lock }
+  LockService { id: lockSvc }
 }
