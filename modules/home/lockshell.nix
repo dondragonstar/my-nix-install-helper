@@ -292,11 +292,13 @@ let
       EOF
 
       cat > $out/bin/sleep-time <<'EOF'
-      #!/usr/bin/env bash
+       #!/usr/bin/env bash
       # Runtime idle-timeout control (SUPER+S walker menu). Writes the JSON
-      # config the quickshell lock shell live-reloads:
-      #   sleep-time 15      screensaver at ~12.5 min, lock after 15 min
-      #   sleep-time never   disable idle cycle (lid close still locks)
+      # config the quickshell lock shell live-reloads — lock is now OFF by
+      # default (screensaver-only). The user explicitly said: keep the
+      # screensaver, ditch the lock screen entirely (SUPER+L removed too).
+      #   sleep-time 5         screensaver after 5 min, no lock
+      #   sleep-time never     disable even the screensaver
       set -euo pipefail
 
       arg="''${1:-5}"
@@ -306,16 +308,15 @@ let
       case "$arg" in
         never|off|disable|0)
           printf '{"never": true}\n' > "$conf"
-          msg="Idle lock: never"
+          msg="Screensaver: never"
           detail="Re-enable with sleep-time <minutes>"
           ;;
         *)
           [[ "$arg" =~ ^[0-9]+$ ]] || { echo "usage: sleep-time <minutes|never>" >&2; exit 1; }
-          lock=$((arg * 60))
-          ss=$((lock - 150)); (( ss < 30 )) && ss=30
-          printf '{"screensaver": %d, "lock": %d}\n' "$ss" "$lock" > "$conf"
-          msg="Idle lock: ''${arg} min"
-          detail="Screensaver after $(( (ss + 30) / 60 )) min, display off when locked"
+          ss=$((arg * 60))
+          printf '{"screensaver": %d, "lock": 0}\n' "$ss" > "$conf"
+          msg="Screensaver: ''${arg} min"
+          detail="Lock disabled — screensaver only"
           ;;
       esac
 
@@ -365,9 +366,14 @@ in
   };
 
   # ── Sleep-lock watcher: holds a delay inhibitor, locks on PrepareForSleep ──
+  # Suspend lock is intentionally NOT enabled — the user removed the lock
+  # screen entirely (screensaver-only system). Keep the script around in case
+  # they want to flip back, but don't run it. To re-enable, set
+  #   systemd.user.services.hydra-sleep-lock.Install.WantedBy
+  # back to graphical-session.target.
   systemd.user.services.hydra-sleep-lock = {
     Unit = {
-      Description = "Lock Hydra session before suspend";
+      Description = "Lock Hydra session before suspend (disabled — screensaver-only mode)";
       After = [ "dbus.socket" ];
       Requires = [ "dbus.socket" ];
       PartOf = [ "graphical-session.target" ];
@@ -380,7 +386,7 @@ in
       Restart = "always";
       RestartSec = 2;
     };
-    Install = { WantedBy = [ "graphical-session.target" ]; };
+    Install = { }; # don't autostart; keep the unit for manual use
   };
 
   # Seed runtime files only when absent — user-owned, editable without rebuilds.

@@ -29,7 +29,6 @@
 
     # ── System ──
     { mods = "SUPER"; key = "M";            action = "exit";                       description = "Exit Hyprland (logout)";        category = "System"; }
-    { mods = "SUPER"; key = "L";            action = "exec, hydra-system-lock";     description = "Lock screen (session lock)";   category = "System"; }
     { mods = "SUPER"; key = "S";            action = "exec, walker -m menus:sleep"; description = "Change sleep time";             category = "System"; }
 
     # ── Launchers ──

@@ -24,15 +24,20 @@ Item {
   property int screensaverTimeoutSeconds: defaultScreensaverSeconds
   property bool screensaverDisabled: false
   property int lockTimeoutSeconds: defaultLockSeconds
+  property bool lockDisabled: true
   property bool neverIdle: false
   property bool stayAwake: false
   property bool configLoaded: false
   property bool stateLoaded: false
 
-  readonly property bool idleEnabled: configLoaded && !neverIdle && !stayAwake
-  readonly property int firstIdleTimeoutSeconds: Math.min(screensaverTimeoutSeconds, lockTimeoutSeconds)
-  readonly property int screensaverDelaySeconds: Math.max(0, screensaverTimeoutSeconds - firstIdleTimeoutSeconds)
-  readonly property int lockDelaySeconds: Math.max(0, lockTimeoutSeconds - firstIdleTimeoutSeconds)
+  readonly property bool idleEnabled: configLoaded && !neverIdle && !stayAwake && !(screensaverDisabled && lockDisabled)
+  readonly property int firstIdleTimeoutSeconds: {
+    if (lockDisabled) return screensaverTimeoutSeconds
+    if (screensaverDisabled) return lockTimeoutSeconds
+    return Math.min(screensaverTimeoutSeconds, lockTimeoutSeconds)
+  }
+  readonly property int screensaverDelaySeconds: screensaverDisabled ? 0 : Math.max(0, screensaverTimeoutSeconds - firstIdleTimeoutSeconds)
+  readonly property int lockDelaySeconds: lockDisabled ? 0 : Math.max(0, lockTimeoutSeconds - firstIdleTimeoutSeconds)
 
   property bool idledThisCycle: false
   property bool screensaverStartedThisCycle: false
@@ -62,17 +67,23 @@ Item {
 
   function startIdleCycle() {
     if (root.idledThisCycle) return
-    console.log("hydra idle cycle-start ss=" + root.screensaverTimeoutSeconds + "s lock=" + root.lockTimeoutSeconds + "s")
     root.idledThisCycle = true
     root.screensaverStartedThisCycle = false
     resetScreensaverWindows()
 
-    if (root.screensaverDisabled || root.screensaverDelaySeconds === 0) {
-      if (!root.screensaverDisabled) launchScreensaver()
-    } else screensaverTimer.restart()
+    if (!root.screensaverDisabled) {
+      if (root.screensaverDelaySeconds === 0) launchScreensaver()
+      else screensaverTimer.restart()
+    }
 
-    if (root.lockDelaySeconds === 0) lockSystem("lock-immediate")
-    else lockTimer.restart()
+    if (!root.lockDisabled) {
+      if (root.lockDelaySeconds === 0) lockSystem("lock-immediate")
+      else lockTimer.restart()
+    }
+
+    if (root.screensaverDisabled && root.lockDisabled) return
+    console.log("hydra idle cycle-start ss=" + (root.screensaverDisabled ? "off" : root.screensaverTimeoutSeconds + "s")
+              + " lock=" + (root.lockDisabled ? "off" : root.lockTimeoutSeconds + "s"))
   }
 
   function cancelIdleCycle(reason) {
@@ -132,9 +143,9 @@ Item {
     try {
       var c = JSON.parse(String(jsonText))
       root.neverIdle = c.never === true
-      if (typeof c.lock === "number" && c.lock > 0) root.lockTimeoutSeconds = c.lock
-      // screensaver <= 0 (or null): no screensaver, lock still armed.
+      root.lockDisabled = !(typeof c.lock === "number" && c.lock > 0)
       root.screensaverDisabled = !(typeof c.screensaver === "number" && c.screensaver > 0)
+      if (!root.lockDisabled) root.lockTimeoutSeconds = c.lock
       if (!root.screensaverDisabled) root.screensaverTimeoutSeconds = c.screensaver
     } catch (e) {
       console.log("hydra idle bad config:", e)
@@ -213,7 +224,7 @@ Item {
         enabled: root.idleEnabled, never: root.neverIdle, stayAwake: root.stayAwake,
         inCycle: root.idledThisCycle,
         screensaver: root.screensaverDisabled ? null : root.screensaverTimeoutSeconds,
-        lock: root.lockTimeoutSeconds, screensaverWindows: root.screensaverWindowCount
+        lock: root.lockDisabled ? null : root.lockTimeoutSeconds, screensaverWindows: root.screensaverWindowCount
       })
     }
     function toggle(): string {
