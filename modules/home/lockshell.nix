@@ -89,7 +89,7 @@ let
           fi
         done
         # Let the finished effect linger before morphing into the next one.
-        sleep 6
+        sleep 3
       done
       EOF
 
@@ -119,9 +119,17 @@ let
 
       for m in $(hyprctl monitors -j 2>/dev/null | jq -r '.[] | .name'); do
         focus_mon "$m"
+        # Opaque black + fullscreen: never translucent even if the user's
+        # alacritty config runs lower opacity. Values are typed TOML overrides
+        # (alacritty 0.17 rejects barewords like None/Fullscreen unquoted).
         alacritty --class org.hydra.screensaver \
-          -o font.size=16 -o window.padding.x=0 -o window.padding.y=0 \
-          -o window.decorations=None -e hydra-screensaver >/dev/null 2>&1 &
+          -o font.size=16 \
+          -o 'window.padding.x=0' -o 'window.padding.y=0' \
+          -o 'window.decorations="None"' \
+          -o 'window.startup_mode="Fullscreen"' \
+          -o 'window.opacity=1.0' \
+          -o 'colors.primary.background="#000000"' \
+          -e hydra-screensaver >/dev/null 2>&1 &
         wait_for_window
       done
 
