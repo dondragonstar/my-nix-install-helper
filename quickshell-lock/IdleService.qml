@@ -29,8 +29,11 @@ Item {
   property bool stayAwake: false
   property bool configLoaded: false
   property bool stateLoaded: false
+  property bool audioInhibited: false
+  property bool fullscreenInhibited: false
+  readonly property bool mediaInhibited: audioInhibited || fullscreenInhibited
 
-  readonly property bool idleEnabled: configLoaded && !neverIdle && !stayAwake && !(screensaverDisabled && lockDisabled)
+  readonly property bool idleEnabled: configLoaded && !neverIdle && !stayAwake && !mediaInhibited && !(screensaverDisabled && lockDisabled)
   readonly property int firstIdleTimeoutSeconds: {
     if (lockDisabled) return screensaverTimeoutSeconds
     if (screensaverDisabled) return lockTimeoutSeconds
@@ -134,9 +137,15 @@ Item {
 
   function handleActive() {
     if (!root.idledThisCycle) return
-    // Screensaver startup can report activity; keep the cycle armed while it lives.
     if (root.screensaverStartedThisCycle && (root.screensaverWindowCount > 0 || screensaverLaunchGraceTimer.running)) return
     cancelIdleCycle("activity")
+  }
+
+  function handleMediaInhibitChanged() {
+    if (root.mediaInhibited && root.idledThisCycle) {
+      var reason = root.audioInhibited ? "audio-playing" : "fullscreen"
+      cancelIdleCycle(reason)
+    }
   }
 
   function applyConfig(jsonText) {
@@ -160,6 +169,9 @@ Item {
     respectInhibitors: true
     onIsIdleChanged: isIdle ? root.startIdleCycle() : root.handleActive()
   }
+
+  onMediaInhibitedChanged: handleMediaInhibitChanged()
+  onIdleEnabledChanged: if (!idleEnabled && idledThisCycle) handleMediaInhibitChanged()
 
   Timer { id: screensaverTimer; interval: root.screensaverDelaySeconds * 1000; onTriggered: root.launchScreensaver() }
   Timer {
@@ -212,9 +224,29 @@ Item {
     onExited: root.stateLoaded = true
   }
 
+  Process {
+    id: audioCheck
+    command: ["bash", "-c", "pactl list sink-inputs short 2>/dev/null | grep -q . && echo yes || echo no"]
+    stdout: StdioCollector {
+      onStreamFinished: root.audioInhibited = String(text).trim() === "yes"
+    }
+  }
+
+  Process {
+    id: fullscreenCheck
+    command: ["bash", "-c", "hyprctl clients -j 2>/dev/null | jq -e '[.[] | select(.fullscreen != 0 and .fullscreen != false)] | length > 0' >/dev/null && echo yes || echo no"]
+    stdout: StdioCollector {
+      onStreamFinished: root.fullscreenInhibited = String(text).trim() === "yes"
+    }
+  }
+
+  Timer { id: inhibitPollTimer; interval: 3000; repeat: true; running: true; triggeredOnStart: true; onTriggered: { audioCheck.running = true; fullscreenCheck.running = true } }
+
   Component.onCompleted: {
     readConfig.running = true
     readStayAwake.running = true
+    audioCheck.running = true
+    fullscreenCheck.running = true
   }
 
   IpcHandler {
@@ -222,7 +254,7 @@ Item {
     function status(): string {
       return JSON.stringify({
         enabled: root.idleEnabled, never: root.neverIdle, stayAwake: root.stayAwake,
-        inCycle: root.idledThisCycle,
+        inCycle: root.idledThisCycle, audioInhibited: root.audioInhibited, fullscreenInhibited: root.fullscreenInhibited,
         screensaver: root.screensaverDisabled ? null : root.screensaverTimeoutSeconds,
         lock: root.lockDisabled ? null : root.lockTimeoutSeconds, screensaverWindows: root.screensaverWindowCount
       })

@@ -17,6 +17,7 @@ in
     NamePretty = "Sleep time"
     Icon = "preferences-system-sleep"
     Cache = false
+    FixedOrder = true
     Action = "sh -c '${homeDir}/.local/bin/sleep-time %VALUE%'"
 
     function GetEntries()
