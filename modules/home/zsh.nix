@@ -15,8 +15,7 @@
       bootbuild = "nh os boot";
       # Evaluate the flake without building — catches eval errors fast.
       check = "nix flake check /etc/nixos";
-      # Manual garbage collect (7d retention) + store dedup.
-      gc = "nh clean all";
+      gc = "nh clean all --keep 3 --keep-since 4d";
       gcsize = "nix-store --gc --print-dead | tr '\\n' '\\0' | xargs -0 du -hc | tail -n 1";
       cat = "bat";
       ls = "eza";

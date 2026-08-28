@@ -96,18 +96,10 @@
   };
 
   ##############################################################
-  ## Input / Key remapping (keyd — evdev-level, covers TTY +
-  ## login + Hyprland; one-way caps→esc, esc key untouched so all
-  ## its functions survive. Caps lock toggle is sacrificed — the
-  ## whole point.)
+  ## Input / Key remapping (keyd — disabled per user request;
+  ## caps→esc removed so Caps Lock returns to normal / disabled)
   ##############################################################
-  services.keyd = {
-    enable = true;
-    keyboards.default = {
-      ids = [ "*" ];
-      settings.main.capslock = "esc";
-    };
-  };
+  services.keyd.enable = false;
 
   ##############################################################
   ## Login greeter (greetd + ReGreet)
