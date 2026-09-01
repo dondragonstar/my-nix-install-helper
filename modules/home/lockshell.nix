@@ -362,13 +362,14 @@ in
     Unit = {
       Description = "Hydra lock/idle shell (screensaver + session lock)";
       After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
     };
     Service = {
       Type = "simple";
       Environment = "PATH=${scriptPath}";
       ExecStart = "${pkgs.quickshell}/bin/qs -p ${qsShellDir}";
-      Restart = "on-failure";
-      RestartSec = 2;
+      Restart = "no";
+      SuccessExitStatus = [ 0 1 255 ];
     };
     Install = { WantedBy = [ "graphical-session.target" ]; };
   };
@@ -391,8 +392,8 @@ in
       Type = "simple";
       Environment = "PATH=${scriptPath}";
       ExecStart = "${homeDir}/.local/bin/hydra-system-sleep-monitor";
-      Restart = "always";
-      RestartSec = 2;
+      Restart = "no";
+      SuccessExitStatus = [ 0 1 127 255 ];
     };
     Install = { }; # don't autostart; keep the unit for manual use
   };

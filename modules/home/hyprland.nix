@@ -142,6 +142,10 @@ in
         decoration = {
             rounding = 6,
         },
+        misc = {
+            disable_hyprland_logo = true;
+            disable_splash_rendering = true;
+        },
     })
 
     -- Device-specific

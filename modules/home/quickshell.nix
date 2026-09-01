@@ -18,12 +18,13 @@
   systemd.user.services.quickshell = {
     Unit = {
       Description = "Quickshell status bar";
+      PartOf = [ "graphical-session.target" ];
     };
     Service = {
       Type = "simple";
       ExecStart = "${pkgs.quickshell}/bin/quickshell";
-      Restart = "on-failure";
-      RestartSec = 2;
+      Restart = "no";
+      SuccessExitStatus = [ 0 255 ];
     };
   };
 }
