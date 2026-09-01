@@ -93,6 +93,7 @@ in
 
     -- Autostart
     hl.on("hyprland.start", function()
+        hl.exec_cmd("clear > /dev/tty1 2>/dev/null || true")
         hl.exec_cmd("awww-daemon")
         hl.exec_cmd("sleep 1 && restore-wallpaper")
         hl.exec_cmd("hyprctl setcursor Bibata-Modern-Classic 24")
