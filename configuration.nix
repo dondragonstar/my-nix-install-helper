@@ -1,6 +1,9 @@
 { config, lib, pkgs, hostname, username, machine, hyprland, xdph, ... }:
 
 {
+  imports = [
+    ./modules/system/plymouth.nix
+  ];
   # hardware-configuration.nix is imported via flake.nix's modules list,
   # not here -- this avoids the duplicate-import trap some tutorials cause
   # when both flake.nix and configuration.nix reference it.
