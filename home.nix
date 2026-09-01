@@ -18,6 +18,7 @@
     ./modules/home/idle.nix
     ./modules/home/lockshell.nix
     ./modules/home/spotify.nix
+    ./modules/home/branding.nix
   ];
 
   options.my.barChoice = lib.mkOption {
