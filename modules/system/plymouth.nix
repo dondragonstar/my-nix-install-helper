@@ -21,7 +21,7 @@ let
     cat > $out/share/plymouth/themes/hydra/hydra.plymouth <<EOF
 [Plymouth Theme]
 Name=Hydra
-Description=Branding from assets/branding/screensaver.txt + Omarchy-style bar
+Description=Branding from assets/branding/screensaver.txt + Omarchy bar
 ModuleName=script
 [script]
 ImageDir=/share/plymouth/themes/hydra
@@ -36,14 +36,14 @@ logo.sprite.SetPosition(Window.GetWidth()/2 - logo.image.GetWidth()/2, Window.Ge
 box.image = Image("box.png");
 box.sprite = Sprite(box.image);
 box.sprite.SetPosition(Window.GetWidth()/2 - box.image.GetWidth()/2, Window.GetHeight() * 0.72, 10000);
-bar.image = Image("bar.png");
-bar.sprite = Sprite(bar.image);
-bar.sprite.SetPosition(Window.GetWidth()/2 - bar.image.GetWidth()/2, Window.GetHeight() * 0.72, 10001);
-fun refresh_callback () {
-  progress = Plymouth.GetProgress();
-  bar.sprite.SetClip(0, 0, bar.image.GetWidth() * progress, bar.image.GetHeight());
+bar.original_image = Image("bar.png");
+bar.sprite = Sprite();
+bar.sprite.SetPosition(Window.GetWidth()/2 - bar.original_image.GetWidth()/2, Window.GetHeight() * 0.72, 10001);
+fun progress_callback(duration, progress) {
+  bar.image = bar.original_image.Scale(bar.original_image.GetWidth() * progress, bar.original_image.GetHeight());
+  bar.sprite.SetImage(bar.image);
 }
-Plymouth.SetRefreshFunction (refresh_callback);
+Plymouth.SetBootProgressFunction(progress_callback);
 SCRIPT
   '';
 in {
