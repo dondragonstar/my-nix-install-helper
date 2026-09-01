@@ -44,6 +44,43 @@ GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519_personal -o IdentitiesOnly=yes" git pu
 AI agents run `drybuild` (or `nix build --dry-run ...toplevel`) and report;
 only the user runs `rebuild`.
 
+## Boot — silent + Plymouth
+
+Silent until `greetd`/`ReGreet`; failures still report (`systemd.show_status=auto`).
+
+| Param | Effect |
+|---|---|
+| `quiet` `splash` | suppress kernel/initrd scroll |
+| `loglevel=3` + `boot.consoleLogLevel 0` / `boot.initrd.verbose false` | errors only |
+| `systemd.show_status=auto` / `rd.systemd.show_status=auto` | show only failed units |
+| `rd.udev.log_level=3` | quiet udev in initrd |
+
+Plymouth `hydra` (`modules/system/plymouth.nix`, `boot.initrd.systemd.enable` holds framebuffer till greeter) from repo-tracked `assets/branding/screensaver.txt` (JetBrainsMono Nerd Font via explicit `pkgs.nerd-fonts.jetbrains-mono` file + `FONTCONFIG_FILE` boundary; KMS `nvidia-drm.modeset=1` already in `hybrid-nvidia`).
+
+| Helper | What |
+|---|---|
+| `hydra-branding-preview [bg] [fg] [src] [out]` | `convert label@` → `/tmp/preview.png` |
+| `hydra-branding-sync` | `cp ~/.config/branding/screensaver.txt → assets/branding/screensaver.txt` |
+
+```bash
+# edit → preview → sync → diff → build
+vim ~/.config/branding/screensaver.txt
+hydra-branding-preview && xdg-open /tmp/preview.png
+hydra-branding-sync
+git -C /etc/nixos diff assets/branding/screensaver.txt
+nh os build   # real build — dry-run is: nix build --dry-run /etc/nixos#nixosConfigurations.hydragon2000-pc.config.system.build.toplevel
+```
+
+Verification — Esc during boot exposes log (check, not promise); rollback is `boot.plymouth.enable = false` or remove `quiet`/`splash` in `configuration.nix`, not unverified `plymouth.enable=0`:
+
+```bash
+grep -q quiet /proc/cmdline && echo PASS
+plymouth-set-default-theme --list | grep -q hydra && echo PASS
+systemctl --failed --no-pager; journalctl -b -p warning --no-pager | head -n 20
+bootctl list | grep nixos-generation; ls /boot/loader/entries/*.conf | head
+nix flake check /etc/nixos --no-build   # AI-safe preview (no switch)
+```
+
 ## Fresh install (new machine)
 
 ```bash
