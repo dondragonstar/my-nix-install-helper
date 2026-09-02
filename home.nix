@@ -44,7 +44,14 @@
       XDG_SCREENSHOTS_DIR = "$HOME/Pictures/Screenshots";
     };
 
-    home.sessionPath = [ "$HOME/.local/bin" ];
+    home.sessionPath = [ "$HOME/.local/bin" "$HOME/.npm-global/bin" ];
+
+    programs.npm = {
+      enable = true;
+      npmrc = {
+        prefix = "~/.npm-global";
+      };
+    };
 
     programs.home-manager.enable = true;
   };
