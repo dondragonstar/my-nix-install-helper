@@ -181,8 +181,6 @@
     rustfmt
     clippy
     rust-analyzer
-    nodejs_22
-    pnpm
     python3
     nix-output-monitor
     telegram-desktop
