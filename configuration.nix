@@ -229,6 +229,7 @@
     sqlite
     appimage-run
     nvd
+    nodejs_22
   ];
 
   fonts.packages = with pkgs; [
