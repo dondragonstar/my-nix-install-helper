@@ -48,7 +48,7 @@
 
     programs.npm = {
       enable = true;
-      npmrc = {
+      settings = {
         prefix = "~/.npm-global";
       };
     };
