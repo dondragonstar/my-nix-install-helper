@@ -116,13 +116,32 @@
   services.keyd.enable = false;
 
   ##############################################################
-  ## Login greeter (greetd + ReGreet)
+  ## Login greeter (greetd + ReGreet) — active default (Task 2)
   ##
   ## ReGreet discovers sessions from the displayManager session
   ## integration (greetd enables it automatically), so the Hyprland
   ## session desktop file (Exec=start-hyprland) shows up in the
   ## login screen dropdown. Background rotates each boot via the
   ## regreet-wallpaper systemd unit below.
+  ##
+  ## SDDM OPT-IN ALTERNATIVE (Task 3 — NOT active, docs only):
+  ## To switch to SDDM catppuccin-mocha (Omarchy login parity) —
+  ##   1) Remove programs.regreet, users.users.greeter,
+  ##      systemd.services.regreet-wallpaper below.
+  ##   2) Uncomment the block below (validated reference):
+  ## services.displayManager.sddm = {
+  ##   enable = true;
+  ##   wayland.enable = true;
+  ##   theme = "catppuccin-mocha";
+  ##   extraPackages = with pkgs; [ catppuccin-sddm ];
+  ##   settings.Theme.FacesDir = "/run/current-system/sw/share/sddm/faces";
+  ##   autoNumlock = true;
+  ## };
+  ## services.displayManager.defaultSession = "hyprland";
+  ## Notes: catppuccin-sddm provides share/sddm/themes/catppuccin-mocha/theme.conf;
+  ## SessionDir is desktops/share/wayland-sessions via sessionPackages (extraPackages,
+  ## not systemPackages). Task 2 dark filter (regreet-wallpaper dark_candidates)
+  ## is the current fix — SDDM only if user explicitly chooses it.
   ##############################################################
   programs.regreet = {
     enable = true;

@@ -1,3 +1,4 @@
+- configuration.nix: document SDDM catppuccin-mocha opt-in alternative as commented block above programs.regreet — zero behavior change (ReGreet remains default per Task 3 preflight; SDDM requires extraPackages catppuccin-sddm, desktops/share/wayland-sessions SessionDir, FacesDir; Task 2 dark filter stays current fix)
 - configuration.nix: regreet-wallpaper prefer dark to match Plymouth — eliminate white flash (filename filter dark/night/mocha/black, fallback to random when no dark candidate; 23/581 dark candidates available)
 - modules/system/plymouth.nix: add PasswordCallback+message handling — future-proof LUKS prompt (hides box/bar on SetPasswordFunction, messages at 0.78 height via SetMessageFunction), no behavior change on unencrypted boot
 - modules/system/plymouth.nix: fix hydra bar to use Plymouth.SetBootProgressFunction + Scale — correct API (reference script.script), bar now fills with progress instead of SetClip/SetRefreshFunction staying full at 0%
