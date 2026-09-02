@@ -25,24 +25,23 @@ global.max_progress = 0.0;  # Track the maximum progress reached to prevent back
 fun refresh_callback() {
   global.animation_frame++;
 
-  # Animate fake progress to limit over time with easing
   if (global.fake_progress_active == 1) {
-    # Calculate elapsed time since start
-    elapsed_time = global.animation_frame / 50.0;  # Convert frames to seconds (50 FPS)
-
-    # Calculate linear progress ratio (0 to 1) based on time
+    elapsed_time = global.animation_frame / 50.0;
     time_ratio = elapsed_time / global.fake_progress_duration;
     if (time_ratio > 1.0) time_ratio = 1.0;
-
-    # Apply easing curve: ease-out quadratic
-    # Formula: 1 - (1 - x)^2
     eased_ratio = 1 - ((1 - time_ratio) * (1 - time_ratio));
-
-    # Calculate fake progress based on eased ratio
     global.fake_progress = eased_ratio * global.fake_progress_limit;
-
-    # Update progress bar with fake progress
     update_progress_bar(global.fake_progress);
+  }
+
+  # Blink cursor in password mode (every 25 frames ~0.5s)
+  if (global.password_shown == 1) {
+    global.cursor_tick++;
+    if (global.cursor_tick >= 25) {
+      global.cursor_tick = 0;
+      global.cursor_visible = 1 - global.cursor_visible;
+      cursor.sprite.SetOpacity(global.cursor_visible);
+    }
   }
 }
 
@@ -76,12 +75,15 @@ fun hide_progress_bar() {
 fun show_password_dialog() {
   lock.sprite.SetOpacity(1);
   entry.sprite.SetOpacity(1);
+  cursor.sprite.SetOpacity(1);
+  global.cursor_visible = 1;
+  global.cursor_tick = 0;
 }
 
 fun hide_password_dialog() {
   lock.sprite.SetOpacity(0);
   entry.sprite.SetOpacity(0);
-
+  cursor.sprite.SetOpacity(0);
   for (index = 0; bullet.sprites[index]; index++) {
     bullet.sprites[index].SetOpacity(0);
   }
@@ -126,6 +128,14 @@ lock.y = entry.y + entry.image.GetHeight() / 2 - lock_height / 2;
 lock.sprite.SetPosition(lock.x, lock.y, 10001);
 lock.sprite.SetOpacity(0);
 
+# Cursor for password entry (blinking bar)
+cursor.image = Image("bullet.png").Scale(2, entry.image.GetHeight() * 0.6);
+cursor.sprite = Sprite(cursor.image);
+cursor.sprite.SetPosition(entry.x + 16, entry.y + entry.image.GetHeight() * 0.2, 10002);
+cursor.sprite.SetOpacity(0);
+global.cursor_visible = 0;
+global.cursor_tick = 0;
+
 # Bullet array
 bullet.sprites = [];
 
@@ -162,16 +172,17 @@ fun display_password_callback(prompt, bullets) {
 
   for (index = 0; index < bullets_to_show; index++) {
     if (!bullet.sprites[index]) {
-      # Scale bullet image to 7x7 pixels
       scaled_bullet = bullet.image.Scale(7, 7);
       bullet.sprites[index] = Sprite(scaled_bullet);
       bullet.x = entry.x + 20 + index * (7 + 5);
       bullet.y = entry.y + entry.image.GetHeight() / 2 - 3.5;
       bullet.sprites[index].SetPosition(bullet.x, bullet.y, 10002);
     }
-
     bullet.sprites[index].SetOpacity(1);
   }
+  # Position cursor after last bullet (or at start if empty)
+  cursor_x = entry.x + 20 + bullets_to_show * 12;
+  cursor.sprite.SetPosition(cursor_x, entry.y + entry.image.GetHeight() * 0.2, 10002);
 }
 
 Plymouth.SetDisplayNormalFunction(display_normal_callback);
