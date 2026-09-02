@@ -101,6 +101,9 @@
     # hyprland input predates the event-loop hangup fix (#417) and spins at
     # ~100% CPU after a screenshot/screencast (hyprwm/xdg-desktop-portal-hyprland#411).
     portalPackage = xdph.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
+    # uwsm opt-in — flip to true for Omarchy `uwsm start Hyprland` session flow;
+    # already handled by `systemctl --user import-environment` in hyprland.lua, so false is safe default (Task 4)
+    withUWSM = false;
   };
 
   xdg.portal = {
