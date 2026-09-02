@@ -49,7 +49,7 @@
     programs.npm = {
       enable = true;
       settings = {
-        prefix = "~/.local/bin";
+        prefix = "~/.local";
       };
     };
 
