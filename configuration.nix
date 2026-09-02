@@ -119,128 +119,20 @@
   services.keyd.enable = false;
 
   ##############################################################
-  ## Login greeter (greetd + ReGreet) — active default (Task 2)
+  ## Login greeter (SDDM catppuccin-mocha — Omarchy parity)
   ##
-  ## ReGreet discovers sessions from the displayManager session
-  ## integration (greetd enables it automatically), so the Hyprland
-  ## session desktop file (Exec=start-hyprland) shows up in the
-  ## login screen dropdown. Background rotates each boot via the
-  ## regreet-wallpaper systemd unit below.
-  ##
-  ## SDDM OPT-IN ALTERNATIVE (Task 3 — NOT active, docs only):
-  ## To switch to SDDM catppuccin-mocha (Omarchy login parity) —
-  ##   1) Remove programs.regreet, users.users.greeter,
-  ##      systemd.services.regreet-wallpaper below.
-  ##   2) Uncomment the block below (validated reference):
-  ## services.displayManager.sddm = {
-  ##   enable = true;
-  ##   wayland.enable = true;
-  ##   theme = "catppuccin-mocha";
-  ##   extraPackages = with pkgs; [ catppuccin-sddm ];
-  ##   settings.Theme.FacesDir = "/run/current-system/sw/share/sddm/faces";
-  ##   autoNumlock = true;
-  ## };
-  ## services.displayManager.defaultSession = "hyprland";
-  ## Notes: catppuccin-sddm provides share/sddm/themes/catppuccin-mocha/theme.conf;
-  ## SessionDir is desktops/share/wayland-sessions via sessionPackages (extraPackages,
-  ## not systemPackages). Task 2 dark filter (regreet-wallpaper dark_candidates)
-  ## is the current fix — SDDM only if user explicitly chooses it.
+  ## Customizable: change theme to another catppuccin-sddm flavour
+  ## or add extraPackages for more themes.
   ##############################################################
-  programs.regreet = {
+  services.displayManager.sddm = {
     enable = true;
-
-    # Matches the desktop theme: Catppuccin Mocha (blue accent, rimless),
-    # Papirus-Dark icons, Bibata-Modern-Classic cursor, JetBrainsMono Nerd Font.
-    theme = {
-      package = pkgs.catppuccin-gtk.override {
-        variant = "mocha";
-        accents = [ "blue" ];
-        size = "standard";
-        tweaks = [ "rimless" ];
-      };
-      name = "catppuccin-mocha-blue-standard+rimless";
-    };
-    iconTheme = {
-      package = pkgs.papirus-icon-theme;
-      name = "Papirus-Dark";
-    };
-    cursorTheme = {
-      package = pkgs.bibata-cursors;
-      name = "Bibata-Modern-Classic";
-    };
-    font = {
-      package = pkgs.nerd-fonts.jetbrains-mono;
-      name = "JetBrainsMono Nerd Font";
-      size = 16;
-    };
-
-    settings = {
-      background = {
-        path = "/var/lib/regreet/background.png";
-        fit = "Cover";
-      };
-      appearance.greeting_msg = "Welcome back";
-      GTK.application_prefer_dark_theme = true;
-      commands = {
-        reboot = [ "systemctl" "reboot" ];
-        poweroff = [ "systemctl" "poweroff" ];
-      };
-    };
+    wayland.enable = true;
+    theme = "catppuccin-mocha-mauve";
+    extraPackages = with pkgs; [ catppuccin-sddm ];
+    settings.Theme.FacesDir = "/run/current-system/sw/share/sddm/faces";
+    autoNumlock = true;
   };
-
-  # greetd launches the greeter (cage) as this user; it needs access to DRM,
-  # input and render devices to display ReGreet and handle keyboard/mouse.
-  users.users.greeter = {
-    isSystemUser = true;
-    group = "greeter";
-    extraGroups = [ "video" "render" "input" "seat" "tty" ];
-  };
-
-  # Rotate the login-screen wallpaper each boot: pick a random image from the
-  # user's wallpaper folder and copy it to the greeter-accessible location
-  # (/var/lib/regreet/background.png, created+owned by greeter via tmpfiles).
-  systemd.services.regreet-wallpaper = {
-    description = "Pick a random wallpaper for the ReGreet login screen";
-    wantedBy = [ "multi-user.target" ];
-    before = [ "greetd.service" ];
-    after = [ "systemd-tmpfiles-setup.service" ];
-    path = [ pkgs.coreutils pkgs.findutils ];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = pkgs.writeShellScript "regreet-wallpaper" ''
-        set -euo pipefail
-        dest=/var/lib/regreet/background.png
-        dir=${config.users.users.${username}.home}/Pictures/wallpapers_flat
-        if [ ! -d "$dir" ]; then
-          exit 0
-        fi
-        # Real wallpapers are >100KB; the folder also contains tiny cursor/UI
-        # assets (waypaper) that must be skipped.
-        mapfile -t candidates < <(
-          find "$dir" -maxdepth 1 -type f \
-            \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) \
-            -size +100k -print 2>/dev/null
-        )
-        if [ ''${#candidates[@]} -eq 0 ]; then
-          exit 0
-        fi
-        dark_candidates=()
-        for f in "''${candidates[@]}"; do [[ "$f" == *dark* || "$f" == *night* || "$f" == *mocha* || "$f" == *black* ]] && dark_candidates+=("$f"); done
-        if [ ''${#dark_candidates[@]} -gt 0 ]; then candidates=("''${dark_candidates[@]}"); fi
-        pick=''${candidates[$((RANDOM % ''${#candidates[@]}))]}
-        install -o greeter -g greeter -m 0644 "$pick" "$dest"
-        # Seed ReGreet's session cache so Hyprland is pre-selected in the
-        # login dropdown (avoids the default-login-shell fallback).
-        state=/var/lib/regreet/state.toml
-        if [ ! -f "$state" ] || ! grep -q "^${username} = " "$state"; then
-          printf 'last_user = "%s"\n\n[user_to_last_sess]\n%s = "Hyprland"\n' \
-            "${username}" "${username}" > "$state"
-          chown greeter:greeter "$state"
-          chmod 0644 "$state"
-        fi
-      '';
-    };
-  };
+  services.displayManager.defaultSession = "hyprland";
 
   ##############################################################
   ## Power management / lid-close suspend
@@ -339,6 +231,7 @@
     # nh renders nvd package diffs after each `nh os switch`; this nixpkgs's
     # programs.nh module has no nvd.enable option, so add it explicitly.
     nvd
+    catppuccin-sddm
   ];
 
   fonts.packages = with pkgs; [
@@ -373,7 +266,7 @@
   boot.extraModprobeConfig = "options v4l2loopback exclusive_caps=1";
 
   services.gnome.gnome-keyring.enable = true;
-  security.pam.services.greetd.enableGnomeKeyring = true;
+  security.pam.services.sddm.enableGnomeKeyring = true;
 
   # PAM service for the quickshell lock screen (lockshell.nix) — unix
   # password auth, same shape omarchy provisions as omarchy-lock-password.
