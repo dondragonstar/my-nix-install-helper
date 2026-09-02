@@ -9,13 +9,14 @@ let
       sed -i 's|/usr/share/|/share/|g' $out/share/plymouth/themes/omarchy/*
     '';
   };
-  catppuccin-sddm-large = pkgs.catppuccin-sddm.overrideAttrs (old: {
-    postInstall = (old.postInstall or "") + ''
-      for f in $out/share/sddm/themes/catppuccin-*/theme.conf; do
-        [ -f "$f" ] && sed -i 's/^FontSize=.*/FontSize=11/' "$f"
-      done
-    '';
-  });
+  catppuccin-sddm-large = pkgs.runCommand "catppuccin-sddm-1.1.2-large" {} ''
+    mkdir -p $out/share/sddm/themes
+    cp -r ${pkgs.catppuccin-sddm}/share/sddm/themes/* $out/share/sddm/themes/
+    chmod -R u+w $out/share/sddm/themes
+    for f in $out/share/sddm/themes/catppuccin-*/theme.conf; do
+      [ -f "$f" ] && sed -i 's/^FontSize=.*/FontSize=11/' "$f"
+    done
+  '';
 in
 {
   boot.plymouth = {
