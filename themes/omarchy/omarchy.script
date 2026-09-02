@@ -129,9 +129,9 @@ lock.sprite.SetPosition(lock.x, lock.y, 10001);
 lock.sprite.SetOpacity(0);
 
 # Cursor for password entry (blinking bar)
-cursor.image = Image("bullet.png").Scale(2, entry.image.GetHeight() * 0.6);
+cursor.image = Image("bullet.png").Scale(3, entry.image.GetHeight() * 0.5);
 cursor.sprite = Sprite(cursor.image);
-cursor.sprite.SetPosition(entry.x + 16, entry.y + entry.image.GetHeight() * 0.2, 10002);
+cursor.sprite.SetPosition(entry.x + 20, entry.y + entry.image.GetHeight() / 2 - cursor.image.GetHeight() / 2, 10002);
 cursor.sprite.SetOpacity(0);
 global.cursor_visible = 0;
 global.cursor_tick = 0;
@@ -182,7 +182,7 @@ fun display_password_callback(prompt, bullets) {
   }
   # Position cursor after last bullet (or at start if empty)
   cursor_x = entry.x + 20 + bullets_to_show * 12;
-  cursor.sprite.SetPosition(cursor_x, entry.y + entry.image.GetHeight() * 0.2, 10002);
+  cursor.sprite.SetPosition(cursor_x, entry.y + entry.image.GetHeight() / 2 - cursor.image.GetHeight() / 2, 10002);
 }
 
 Plymouth.SetDisplayNormalFunction(display_normal_callback);

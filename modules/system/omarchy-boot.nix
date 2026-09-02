@@ -20,6 +20,7 @@ let
 in
 {
   boot.initrd.systemd.enable = true;
+  boot.initrd.availableKernelModules = [ "i915" ];
 
   boot.plymouth = {
     enable = true;
