@@ -132,11 +132,9 @@ bullet.sprites = [];
 fun display_normal_callback() {
   hide_password_dialog();
 
-  # Get current mode
   mode = Plymouth.GetMode();
 
-  # Only show progress bar for boot and resume modes
-  if ((mode == "boot" || mode == "resume") && global.password_shown == 1) {
+  if (mode == "boot" || mode == "resume") {
     show_progress_bar();
     start_fake_progress();
   }

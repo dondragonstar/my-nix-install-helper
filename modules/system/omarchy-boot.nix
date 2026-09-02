@@ -2,15 +2,20 @@
 let
   omarchyTheme = pkgs.stdenv.mkDerivation {
     name = "plymouth-theme-omarchy";
-    src = ../../themes/omarchy; # relative to /etc/nixos/ → /tmp/omarchy-basecamp/default/plymouth
+    src = ../../themes/omarchy;
     installPhase = ''
       mkdir -p $out/share/plymouth/themes/omarchy
       cp -r bullet.png entry.png lock.png logo.png omarchy.plymouth omarchy.script progress_bar.png progress_box.png $out/share/plymouth/themes/omarchy/
-      
-      # Wildcard fix for all /usr/share/ paths across .plymouth and .script files
       sed -i 's|/usr/share/|/share/|g' $out/share/plymouth/themes/omarchy/*
     '';
   };
+  catppuccin-sddm-large = pkgs.catppuccin-sddm.overrideAttrs (old: {
+    postInstall = (old.postInstall or "") + ''
+      for f in $out/share/sddm/themes/catppuccin-*/theme.conf; do
+        [ -f "$f" ] && sed -i 's/^FontSize=.*/FontSize=11/' "$f"
+      done
+    '';
+  });
 in
 {
   boot.plymouth = {
@@ -29,4 +34,6 @@ in
     "rd.udev.log_level=3"
     "rd.systemd.show_status=auto"
   ];
+
+  services.displayManager.sddm.extraPackages = lib.mkForce [ catppuccin-sddm-large ];
 }
