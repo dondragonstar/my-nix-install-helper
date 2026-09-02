@@ -44,6 +44,18 @@ fun progress_callback(duration, progress) {
   bar.sprite.SetImage(bar.image);
 }
 Plymouth.SetBootProgressFunction(progress_callback);
+message.text = "";
+message.sprite = Sprite();
+message.sprite.SetPosition(Window.GetWidth()/2, Window.GetHeight() * 0.78, 10001);
+fun message_callback(text) {
+  message.text = text;
+}
+Plymouth.SetMessageFunction(message_callback);
+fun password_callback() {
+  box.sprite.SetOpacity(0);
+  bar.sprite.SetOpacity(0);
+}
+Plymouth.SetPasswordFunction(password_callback);
 SCRIPT
   '';
 in {
