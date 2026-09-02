@@ -2,7 +2,6 @@
 
 {
   imports = [
-    ./modules/system/plymouth.nix
     ./modules/system/omarchy-boot.nix
   ];
   # hardware-configuration.nix is imported via flake.nix's modules list,

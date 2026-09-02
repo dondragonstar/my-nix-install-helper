@@ -19,22 +19,13 @@ let
   '';
 in
 {
+  boot.initrd.systemd.enable = true;
+
   boot.plymouth = {
     enable = true;
     theme = lib.mkForce "omarchy";
     themePackages = [ omarchyTheme ];
   };
-  
-  boot.consoleLogLevel = 0;
-  boot.initrd.verbose = false;
-  boot.kernelParams = [
-    "splash"
-    "quiet"
-    "loglevel=3"
-    "systemd.show_status=auto"
-    "rd.udev.log_level=3"
-    "rd.systemd.show_status=auto"
-  ];
 
   services.displayManager.sddm.extraPackages = lib.mkForce [ catppuccin-sddm-large ];
   environment.systemPackages = [ catppuccin-sddm-large ];
