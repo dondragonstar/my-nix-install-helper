@@ -202,6 +202,9 @@
         if [ ''${#candidates[@]} -eq 0 ]; then
           exit 0
         fi
+        dark_candidates=()
+        for f in "''${candidates[@]}"; do [[ "$f" == *dark* || "$f" == *night* || "$f" == *mocha* || "$f" == *black* ]] && dark_candidates+=("$f"); done
+        if [ ''${#dark_candidates[@]} -gt 0 ]; then candidates=("''${dark_candidates[@]}"); fi
         pick=''${candidates[$((RANDOM % ''${#candidates[@]}))]}
         install -o greeter -g greeter -m 0644 "$pick" "$dest"
         # Seed ReGreet's session cache so Hyprland is pre-selected in the

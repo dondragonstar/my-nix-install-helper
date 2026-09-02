@@ -1,3 +1,4 @@
+- configuration.nix: regreet-wallpaper prefer dark to match Plymouth — eliminate white flash (filename filter dark/night/mocha/black, fallback to random when no dark candidate; 23/581 dark candidates available)
 - modules/system/plymouth.nix: add PasswordCallback+message handling — future-proof LUKS prompt (hides box/bar on SetPasswordFunction, messages at 0.78 height via SetMessageFunction), no behavior change on unencrypted boot
 - modules/system/plymouth.nix: fix hydra bar to use Plymouth.SetBootProgressFunction + Scale — correct API (reference script.script), bar now fills with progress instead of SetClip/SetRefreshFunction staying full at 0%
 - modules/home/hyprland.nix: clear VT1 before awww-daemon on hyprland.start — hide one-frame VT text-buffer flash after ReGreet before hl.config misc takes effect (misc.disable_hyprland_logo already true, but VT still shows one frame)
