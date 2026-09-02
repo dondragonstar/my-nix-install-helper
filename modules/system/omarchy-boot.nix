@@ -37,4 +37,5 @@ in
   ];
 
   services.displayManager.sddm.extraPackages = lib.mkForce [ catppuccin-sddm-large ];
+  environment.systemPackages = [ catppuccin-sddm-large ];
 }
