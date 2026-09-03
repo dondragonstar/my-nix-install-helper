@@ -1,3 +1,4 @@
+- themes/omarchy/omarchy.script, modules/system/omarchy-boot.nix: OLED splash + minimal SDDM rice — splash background to pure black (was dark navy #1a1b26), strip SDDM login to password+login only (username auto lastUser, session chooser hidden), poweroff/reboot buttons doubled, Bibata cursor symlinked into /root/.icons + /var/lib/sddm/.icons via tmpfiles in case SDDM scrubs XCURSOR env before launching weston
 - configuration.nix: add nodejs_22 to systemPackages for DeepSeek Harness (dsh) global install
 - modules/home/apps.nix: remove nodejs + pnpm from home.packages (nodejs_22 already in system packages; pnpm pulls nodejs v24 conflicting with v22)
 - home.nix: npm prefix ~/.local (binaries land in ~/.local/bin/ which is on PATH)
