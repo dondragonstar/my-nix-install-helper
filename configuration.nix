@@ -129,7 +129,11 @@
     wayland.enable = true;
     theme = "catppuccin-mocha-mauve";
     extraPackages = with pkgs; [ catppuccin-sddm ];
-    settings.Theme.FacesDir = "/run/current-system/sw/share/sddm/faces";
+    settings.Theme = {
+      FacesDir = "/run/current-system/sw/share/sddm/faces";
+      CursorTheme = "Bibata-Modern-Classic";
+      CursorSize = "24";
+    };
     autoNumlock = true;
   };
   services.displayManager.defaultSession = "hyprland";

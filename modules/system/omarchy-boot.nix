@@ -29,5 +29,11 @@ in
   };
 
   services.displayManager.sddm.extraPackages = lib.mkForce [ catppuccin-sddm-large ];
-  environment.systemPackages = [ catppuccin-sddm-large ];
+  environment.systemPackages = [ catppuccin-sddm-large pkgs.bibata-cursors ];
+
+  systemd.services.display-manager.environment = {
+    XCURSOR_PATH = "${pkgs.bibata-cursors}/share/icons";
+    XCURSOR_THEME = "Bibata-Modern-Classic";
+    XCURSOR_SIZE = "24";
+  };
 }
