@@ -6,7 +6,7 @@ let
     installPhase = ''
       mkdir -p $out/share/plymouth/themes/omarchy
       cp -r bullet.png entry.png lock.png logo.png omarchy.plymouth omarchy.script progress_bar.png progress_box.png $out/share/plymouth/themes/omarchy/
-      sed -i 's|/usr/share/|/share/|g' $out/share/plymouth/themes/omarchy/*
+      sed -i "s|/usr/share|$out/share|g" $out/share/plymouth/themes/omarchy/*
     '';
   };
   catppuccin-sddm-large = pkgs.runCommand "catppuccin-sddm-1.1.2-large" {} ''
@@ -20,7 +20,7 @@ let
 in
 {
   boot.initrd.systemd.enable = true;
-  boot.initrd.availableKernelModules = [ "i915" ];
+  boot.initrd.kernelModules = [ "i915" ];
 
   boot.plymouth = {
     enable = true;
